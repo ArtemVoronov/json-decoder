@@ -8,70 +8,37 @@ import java.util.regex.Pattern;
  * Created by voronov on 02.08.2015.
  */
 public class Lexer {
-    public static enum TokenType {
-        // Token types
-        LBRACE("\\{"),
-        RBRACE("\\}"),
-        LBRACKET("\\["),
-        RBRACKET("\\]"),
-        COMMA(","),
-        COLON(":"),
-        STRING("\"(([^\"\\\\]|\\\\[\\\\\"/bfnrt]|\\\\u\\d{4})*)\""),
-        NUMBER("-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?"),
-        TRUE("true"),
-        FALSE("false"),
-        NULL("null"),
-        ERROR(".+");
-
-        public final String pattern;
-
-        private TokenType(String pattern) {
-            this.pattern = pattern;
-        }
-    }
-
-    public static class Token {
-        public TokenType type;
-        public String data;
-
-        public Token(TokenType type, String data) {
-            this.type = type;
-            this.data = data;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("(%s %s)", type.name(), data);
-        }
-    }
 
     public static ArrayList<Token> lex(String input) throws UnmarshallerException {
 
-        // The tokens to return
+        // the tokens to return
         ArrayList<Token> tokens = new ArrayList<Token>();
 
-        // Lexer logic begins here
+        // lexer logic begins here
         StringBuffer tokenPatternsBuffer = new StringBuffer();
 
         for (TokenType tokenType : TokenType.values()) {
             tokenPatternsBuffer.append(String.format("|(?<%s>%s)", tokenType.name(), tokenType.pattern));
         }
 
+        // exclude '|' symbol
         Pattern tokenPatterns = Pattern.compile(new String(tokenPatternsBuffer.substring(1)));
 
-        // Begin matching tokens
+        // begin matching tokens
         Matcher matcher = tokenPatterns.matcher(input);
         while (matcher.find()) {
-            for(TokenType tokenType : TokenType.values()) {
+            for (TokenType tokenType : TokenType.values()) {
                 if (matcher.group(tokenType.name()) != null) {
 
                     //if we have wrong input (e.g. forgotten double quotes for string value)
-                    if(tokenType.equals(TokenType.ERROR)) {
+                    if (tokenType.equals(TokenType.ERROR)) {
                         String token = matcher.group(tokenType.name());
-                        throw new UnmarshallerException("Wrong format of input string: unknown token '" + token + "'");
+                        throw new UnmarshallerException("Wrong format of input string: " +
+                                "unknown token '" + token + "'");
                     }
-
-                    tokens.add(new Token(tokenType, matcher.group(tokenType.name())));
+                    if (!tokenType.equals(TokenType.WHITESPACE)) {
+                        tokens.add(new Token(tokenType, matcher.group(tokenType.name())));
+                    }
                     break;
                 }
             }
@@ -81,7 +48,7 @@ public class Lexer {
     }
 
     public static void main(String[] args) {
-        String input = "11 + 22 - 33";
+        String input = "";
         String json1="{" +
                 "\"stringProp\":\"stringValue\"," +
                 "\"intProp\":123," +
@@ -114,9 +81,9 @@ public class Lexer {
 //        System.out.println("json3: " + json3);
 
         // Create tokens and print them
-        ArrayList<Token> tokens = null;
+        ArrayList<Token> tokens;
         try {
-            tokens = lex(json1);
+            tokens = lex(input);
             for (Token token : tokens) {
                 System.out.println(token);
             }
