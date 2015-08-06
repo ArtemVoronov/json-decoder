@@ -76,6 +76,8 @@ public class Parser {
                 Node arrayNode = new Node();
                 arrayNode.setType(NodeType.ARRAY);
                 parent.put(arrayNode);
+                arrayNode.setName("");
+                arrayNode.setValue("");
                 parseArray(arrayNode);
             }
         }
@@ -106,7 +108,9 @@ public class Parser {
 
         //current token should be a STRING
         if (getCurrentTokenType().equals(TokenType.STRING)) {
-            pairNode.setName(getCurrentToken().getData());
+            //remove double quotes
+            String name =  getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
+            pairNode.setName(name);
         } else {
             throw new UnmarshallerException("Wrong format of input string: " +
                     "pair name should be a STRING");
@@ -119,7 +123,8 @@ public class Parser {
             //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
             parseObjectValue(pairNode);
             parent.put(pairNode);
-
+            parent.setName("");
+            parent.setValue("");
             next();
             //next should be COMMA or RBRACE
             if (!getCurrentTokenType().equals(TokenType.COMMA) && !getCurrentTokenType().equals(TokenType.RBRACE)) {
@@ -135,7 +140,9 @@ public class Parser {
     public void parseObjectValue(Node parent) throws UnmarshallerException {
         //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
         if (getCurrentTokenType().equals(TokenType.STRING)) {
-            parent.setValue(getCurrentToken().getData());
+            //remove double quotes
+            String value =  getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
+            parent.setValue(value);
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             parent.setValue(getCurrentToken().getData());
         } else if (getCurrentTokenType().equals(TokenType.TRUE)) {
@@ -191,14 +198,14 @@ public class Parser {
     }
 
     public static void main(String[] args) {
-//        String json="{" +
-//                "\"stringProp\":\"stringValue\"," +
-//                "\"intProp\":123," +
-//                "\"floatProp\":55.5," +
-//                "\"unknownProp\":null,"+
-//                "\"booleanProp_1\":true,"+
-//                "\"booleanProp_2\":false"+
-//                "}";
+        String json="{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intProp\":123," +
+                "\"floatProp\":55.5," +
+                "\"unknownProp\":null,"+
+                "\"booleanProp_1\":true,"+
+                "\"booleanProp_2\":false"+
+                "}";
 //        String json2="[" +
 //                "\"stringValue\"," +
 //                "123," +
@@ -251,7 +258,7 @@ public class Parser {
 //                "\"objectArray\" : [{\"intProp\":1}, {\"intProp\" : 2}, null]"+
 //                "}";
         Parser parser = new Parser();
-        parser.init(json4);
+        parser.init(json);
         try {
             parser.next();
             Node tree = parser.getTree();
