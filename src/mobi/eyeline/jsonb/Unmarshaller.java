@@ -66,10 +66,16 @@ public class Unmarshaller {
             "\"stringProp\":\"stringValue_outer\""+
             "}";
       String json_array = "{"+
-              "\"intArray\" : [1,2],"+
-              "\"stringArray\" : [\"3\",\"4\",  null],"+
-              "\"booleanArray\" : [true,false,true],"+
-              "\"objectArray\" : [{\"intProp\":1}, {\"intProp\" : 2}, null]"+
+              "\"intArray_primitive\" : [1,2],"+
+              "\"integerArray\" : [3,4],"+
+              "\"stringArray\" : [\"3\", \"4\",  null],"+
+              "\"booleanArray_primitive\" : [true, false, true],"+
+              "\"booleanArray\" : [true, false, true],"+
+              "\"floatArray\" : [1.5,2.5],"+
+              "\"floatArray_primitive\" : [3.5,4.5],"+
+              "\"doubleArray_primitive\" : [5.5,6.5],"+
+              "\"doubleArray\" : [7.5,8.5]"+
+//              "\"objectArray\" : [ {\"intProp\" : 1}, {\"intProp\" : 2}, null ]"+
               "}";
     try {
 //      SimpleObject sob = Unmarshaller.unmarshal(json_simple, SimpleObject.class);

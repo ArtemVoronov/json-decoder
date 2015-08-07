@@ -61,18 +61,29 @@ public class TreeVisitor {
         } while (!queue.isEmpty());
     }
 
+    //TODO: adding handling of null value
     public void initArrayElement(Node node, ArrayList arrayList, Class<?> type) {
         Object value = null;
         if (type.equals(String.class)) {
-            value = node.getValue();
+
+            value = node.getValue().substring(1, node.getValue().length() - 1);
+//            value = node.getValue();
         } else if (type.equals(Integer.TYPE)) {
             value = Integer.parseInt(node.getValue());
+        } else if (type.equals(Integer.class)) {
+            value = Integer.valueOf(node.getValue());
         } else if (type.equals(Double.TYPE)) {
             value = Double.parseDouble(node.getValue());
+        } else if (type.equals(Double.class)) {
+            value = Double.valueOf(node.getValue());
         } else if (type.equals(Float.TYPE)) {
             value = Float.parseFloat(node.getValue());
+        } else if (type.equals(Float.class)) {
+            value = Float.valueOf(node.getValue());
         } else if (type.equals(Boolean.TYPE)) {
             value = Boolean.parseBoolean(node.getValue());
+        } else if (type.equals(Boolean.class)) {
+            value = Boolean.valueOf(node.getValue());
         } else if (type.isArray()) {
             //TODO
         } else {
@@ -82,6 +93,7 @@ public class TreeVisitor {
         arrayList.add(value);
     }
 
+    //TODO: adding handling of null value
     public void check(Node node, Set<Field> fields, Class<?> clazz, Object obj) {
         for (Field field : fields) {
             if (node.getName().toLowerCase().equals(field.getName().toLowerCase())) {
@@ -90,6 +102,7 @@ public class TreeVisitor {
                 try {
                     Object value = null;
                     Object[] valueArray = null;
+                    //TODO: add checking for non-primitive classes
                     if (type.equals(String.class)) {
                         value = node.getValue();
                     } else if (type.equals(Integer.TYPE)) {
@@ -110,10 +123,72 @@ public class TreeVisitor {
                         for (Node child : values) {
                             visitArrayNode(arr, child, componentType);
                         }
-
-
                         valueArray = arr.toArray();
-                        setter.invoke(obj,valueArray);
+
+                        //int or Integer array
+                        if (componentType.equals(Integer.TYPE)) {
+                            int[] result = new int[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = ((Integer)valueArray[i]).intValue();
+                            }
+                            setter.invoke(obj,result);
+                        } else if (componentType.equals(Integer.class)) {
+                            Integer[] result = new Integer[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = Integer.valueOf(valueArray[i].toString());
+                            }
+                            setter.invoke(obj, new Object[] {result} );
+                        } else if (componentType.equals(String.class)) {
+                            String[] result = new String[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = valueArray[i].toString();
+                            }
+                            setter.invoke(obj, new Object[] {result} );
+                        } else if (componentType.equals(Boolean.TYPE)) {
+                            boolean[] result = new boolean[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = ((Boolean)valueArray[i]).booleanValue();
+                            }
+
+                            setter.invoke(obj,result);
+                        } else if (componentType.equals(Boolean.class)) {
+                            Boolean[] result = new Boolean[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = Boolean.valueOf(valueArray[i].toString());
+                            }
+                            setter.invoke(obj, new Object[] {result} );
+                        } else if (componentType.equals(Double.TYPE)) {
+                            double[] result = new double[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = ((Double)valueArray[i]).doubleValue();
+                            }
+                            setter.invoke(obj,result);
+                        } else if (componentType.equals(Double.class)) {
+                            Double[] result = new Double[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = Double.valueOf(valueArray[i].toString());
+                            }
+                            setter.invoke(obj, new Object[] {result} );
+                        } else if (componentType.equals(Float.TYPE)) {
+                            float[] result = new float[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = ((Float)valueArray[i]).floatValue();
+                            }
+                            setter.invoke(obj,result);
+                        } else if (componentType.equals(Float.class)) {
+                            Float[] result = new Float[valueArray.length];
+                            for (int i = 0; i < valueArray.length; i++) {
+                                result[i] = Float.valueOf(valueArray[i].toString());
+                            }
+                            setter.invoke(obj, new Object[] {result} );
+                        } else if (componentType.isArray()) {
+                            //TODO
+                        } else {
+                            //TODO
+                        }
+
+
+                        cutBranch(node);
                         return;
                     } else {
                         //complex field (object)

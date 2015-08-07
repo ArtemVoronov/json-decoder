@@ -10,30 +10,48 @@ import mobi.eyeline.jsonb.annotations.JSONProperty;
 public class ComplexObject {
 
 //    @JSONProperty
-    private SimpleObject innerObject1;
+//    private SimpleObject innerObject1;
 //    @JSONProperty
-    private SimpleObject innerObject2;
+//    private SimpleObject innerObject2;
 //    @JSONProperty
-    private String stringProp;
+//    private String stringProp;
+
+//    @JSONProperty
+//    private SimpleObject[] objectArray;
 
     @JSONProperty
-    private int intArray[];
+    private int[] intArray_primitive;
 
     @JSONProperty
-    private String stringArray[];
+    private String[] stringArray;
 
     @JSONProperty
-    private boolean booleanArray[];
+    private boolean[] booleanArray_primitive;
 
     @JSONProperty
-    private SimpleObject[] objectArray;
+    private double[] doubleArray_primitive;
 
-    public int[] getIntArray() {
-        return intArray;
+    @JSONProperty
+    private float[] floatArray_primitive;
+
+    @JSONProperty
+    private Integer[] integerArray;
+
+    @JSONProperty
+    private Boolean[] booleanArray;
+
+    @JSONProperty
+    private Double[] doubleArray;
+
+    @JSONProperty
+    private Float[] floatArray;
+
+    public int[] getIntArray_primitive() {
+        return intArray_primitive;
     }
 
-    public void setIntArray(int[] intArray) {
-        this.intArray = intArray;
+    public void setIntArray_primitive(int[] intArray_primitive) {
+        this.intArray_primitive = intArray_primitive;
     }
 
     public String[] getStringArray() {
@@ -44,43 +62,59 @@ public class ComplexObject {
         this.stringArray = stringArray;
     }
 
-    public boolean[] getBooleanArray() {
+    public boolean[] getBooleanArray_primitive() {
+        return booleanArray_primitive;
+    }
+
+    public void setBooleanArray_primitive(boolean[] booleanArray_primitive) {
+        this.booleanArray_primitive = booleanArray_primitive;
+    }
+
+    public double[] getDoubleArray_primitive() {
+        return doubleArray_primitive;
+    }
+
+    public void setDoubleArray_primitive(double[] doubleArray_primitive) {
+        this.doubleArray_primitive = doubleArray_primitive;
+    }
+
+    public float[] getFloatArray_primitive() {
+        return floatArray_primitive;
+    }
+
+    public void setFloatArray_primitive(float[] floatArray_primitive) {
+        this.floatArray_primitive = floatArray_primitive;
+    }
+
+    public Integer[] getIntegerArray() {
+        return integerArray;
+    }
+
+    public void setIntegerArray(Integer[] integerArray) {
+        this.integerArray = integerArray;
+    }
+
+    public Boolean[] getBooleanArray() {
         return booleanArray;
     }
 
-    public void setBooleanArray(boolean[] booleanArray) {
+    public void setBooleanArray(Boolean[] booleanArray) {
         this.booleanArray = booleanArray;
     }
 
-    public SimpleObject[] getObjectArray() {
-        return objectArray;
+    public Double[] getDoubleArray() {
+        return doubleArray;
     }
 
-    public void setObjectArray(SimpleObject[] objectArray) {
-        this.objectArray = objectArray;
+    public void setDoubleArray(Double[] doubleArray) {
+        this.doubleArray = doubleArray;
     }
 
-    public SimpleObject getInnerObject1() {
-        return innerObject1;
+    public Float[] getFloatArray() {
+        return floatArray;
     }
 
-    public void setInnerObject1(SimpleObject innerObject1) {
-        this.innerObject1 = innerObject1;
-    }
-
-    public SimpleObject getInnerObject2() {
-        return innerObject2;
-    }
-
-    public void setInnerObject2(SimpleObject innerObject2) {
-        this.innerObject2 = innerObject2;
-    }
-
-    public String getStringProp() {
-        return stringProp;
-    }
-
-    public void setStringProp(String stringProp) {
-        this.stringProp = stringProp;
+    public void setFloatArray(Float[] floatArray) {
+        this.floatArray = floatArray;
     }
 }
