@@ -46,12 +46,13 @@ public class TreeVisitor {
         return null;
     }
 
-    public void visitArrayNode(ArrayList arrayList, Node top, Class<?> type) {
+    public void visitArrayNode(ArrayList arrayList, Node top, Class<?> type, boolean serialize)
+            throws InstantiationException, IllegalAccessException, UnmarshallerException {
         Queue<Node> queue=new LinkedList<>();
         queue.add(top);
         do {
             if (!queue.isEmpty()) top=queue.poll();
-            initArrayElement(top, arrayList, type);
+            initArrayElement(top, arrayList, type, serialize);
             List<Node> childrens = top.getNodes();
             if (childrens != null) {
                 for(Node child : childrens) {
@@ -61,13 +62,18 @@ public class TreeVisitor {
         } while (!queue.isEmpty());
     }
 
-    //TODO: adding handling of null value
-    public void initArrayElement(Node node, ArrayList arrayList, Class<?> type) {
+    public void initArrayElement(Node node, ArrayList arrayList, Class<?> type, boolean serialize)
+            throws IllegalAccessException, InstantiationException, UnmarshallerException {
         Object value = null;
-        if (type.equals(String.class)) {
+        if (node.isNull()) {
+            if (serialize) {
+                arrayList.add(value);
+            }
+            return;
+        }
 
+        if (type.equals(String.class)) {
             value = node.getValue().substring(1, node.getValue().length() - 1);
-//            value = node.getValue();
         } else if (type.equals(Integer.TYPE)) {
             value = Integer.parseInt(node.getValue());
         } else if (type.equals(Integer.class)) {
@@ -87,104 +93,163 @@ public class TreeVisitor {
         } else if (type.isArray()) {
             //TODO
         } else {
-            //Object
-            //TODO
+            //else -> object
+            value = type.newInstance();
+            visitTree(node, value);
+            cutBranch(node);
+
         }
         arrayList.add(value);
     }
 
-    //TODO: adding handling of null value
-    public void check(Node node, Set<Field> fields, Class<?> clazz, Object obj) {
+    public void check(Node node, Set<Field> fields, Class<?> clazz, Object obj) throws UnmarshallerException {
+
+        //in all cases null is default value (for primitive types, for wrappers and for complex objects
+        //exclusion is only array elements, case of [..., null, ...]
+        if (node.isNull()) {
+            return;
+        }
+
         for (Field field : fields) {
+            //variable name should be == json key name
             if (node.getName().toLowerCase().equals(field.getName().toLowerCase())) {
                 Method setter = getSetter(field, clazz);
+                if (setter == null) {
+                    throw new UnmarshallerException("no setter for field: " + field.getName());
+                }
                 Class type = field.getType();
                 try {
                     Object value = null;
                     Object[] valueArray = null;
-                    //TODO: add checking for non-primitive classes
                     if (type.equals(String.class)) {
                         value = node.getValue();
                     } else if (type.equals(Integer.TYPE)) {
                         value = Integer.parseInt(node.getValue());
+                    } else if (type.equals(Integer.class)) {
+                        value = Integer.valueOf(node.getValue());
                     } else if (type.equals(Double.TYPE)) {
                         value = Double.parseDouble(node.getValue());
+                    } else if (type.equals(Double.class)) {
+                        value = Double.valueOf(node.getValue());
                     } else if (type.equals(Float.TYPE)) {
                         value = Float.parseFloat(node.getValue());
+                    } else if (type.equals(Float.class)) {
+                        value = Float.valueOf(node.getValue());
                     } else if (type.equals(Boolean.TYPE)) {
                         value = Boolean.parseBoolean(node.getValue());
+                    } else if (type.equals(Boolean.class)) {
+                        value = Boolean.valueOf(node.getValue());
                     } else if (type.isArray()) {
                         //TODO: resolve casting problem
+                        boolean serialize = field.getAnnotation(JSONProperty.class).serializeIfNull();
                         List<Node> childs = node.getNodes();
                         Class componentType = field.getType().getComponentType();
                         ArrayList arr = new ArrayList();
                         Node arrayNode = childs.iterator().next();
                         List<Node> values = arrayNode.getNodes();
                         for (Node child : values) {
-                            visitArrayNode(arr, child, componentType);
+                            visitArrayNode(arr, child, componentType, serialize);
                         }
                         valueArray = arr.toArray();
 
-                        //int or Integer array
+                        //check all cases for java types
                         if (componentType.equals(Integer.TYPE)) {
                             int[] result = new int[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = ((Integer)valueArray[i]).intValue();
+                                if (valueArray[i] == null) {
+                                    continue;
+                                } else {
+                                    result[i] = ((Integer)valueArray[i]).intValue();
+                                }
                             }
                             setter.invoke(obj,result);
                         } else if (componentType.equals(Integer.class)) {
                             Integer[] result = new Integer[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = Integer.valueOf(valueArray[i].toString());
+                                if (valueArray[i] == null) {
+                                    result[i] = null;
+                                } else {
+                                    result[i] = Integer.valueOf(valueArray[i].toString());
+                                }
                             }
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.equals(String.class)) {
                             String[] result = new String[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = valueArray[i].toString();
+                                if (valueArray[i] == null) {
+                                    result[i] = null;
+                                } else {
+                                    result[i] = valueArray[i].toString();
+                                }
                             }
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.equals(Boolean.TYPE)) {
                             boolean[] result = new boolean[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = ((Boolean)valueArray[i]).booleanValue();
+                                if (valueArray[i] == null) {
+                                    continue;
+                                } else {
+                                    result[i] = ((Boolean)valueArray[i]).booleanValue();
+                                }
                             }
-
                             setter.invoke(obj,result);
                         } else if (componentType.equals(Boolean.class)) {
                             Boolean[] result = new Boolean[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = Boolean.valueOf(valueArray[i].toString());
+                                if (valueArray[i] == null) {
+                                    result[i] = null;
+                                } else {
+                                    result[i] = Boolean.valueOf(valueArray[i].toString());
+                                }
                             }
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.equals(Double.TYPE)) {
                             double[] result = new double[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = ((Double)valueArray[i]).doubleValue();
+                                if (valueArray[i] == null) {
+                                    continue;
+                                } else {
+                                    result[i] = ((Double)valueArray[i]).doubleValue();
+                                }
                             }
                             setter.invoke(obj,result);
                         } else if (componentType.equals(Double.class)) {
                             Double[] result = new Double[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = Double.valueOf(valueArray[i].toString());
+                                if (valueArray[i] == null) {
+                                    result[i] = null;
+                                } else {
+                                    result[i] = Double.valueOf(valueArray[i].toString());
+                                }
                             }
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.equals(Float.TYPE)) {
                             float[] result = new float[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = ((Float)valueArray[i]).floatValue();
+                                if (valueArray[i] == null) {
+                                    continue;
+                                } else {
+                                    result[i] = ((Float)valueArray[i]).floatValue();
+                                }
+
                             }
                             setter.invoke(obj,result);
                         } else if (componentType.equals(Float.class)) {
                             Float[] result = new Float[valueArray.length];
                             for (int i = 0; i < valueArray.length; i++) {
-                                result[i] = Float.valueOf(valueArray[i].toString());
+                                if (valueArray[i] == null) {
+                                    result[i] = null;
+                                } else {
+                                    result[i] = Float.valueOf(valueArray[i].toString());
+                                }
                             }
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.isArray()) {
                             //TODO
                         } else {
-                            //TODO
+                            Object[] objects =  (Object[]) Array.newInstance(componentType, valueArray.length);
+                            System.arraycopy(valueArray,0,objects,0,valueArray.length);
+                            setter.invoke(obj, new Object[] {objects} );
                         }
 
 
@@ -219,7 +284,7 @@ public class TreeVisitor {
     }
 
     //watching nodes for JSONProperty fields
-    public void visitTree(Node top, Object obj){
+    public void visitTree(Node top, Object obj) throws UnmarshallerException {
         Class clazz = obj.getClass();
         Set<Field> fields = findFields(clazz, JSONProperty.class);
         Queue<Node> queue=new LinkedList<>();

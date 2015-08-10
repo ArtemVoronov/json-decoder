@@ -150,11 +150,17 @@ public class Parser {
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             parent.setValue(getCurrentToken().getData());
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
-            parent.setValue(getCurrentToken().getData());
+            parent.setValue("");
+            parent.setName("");
+            parent.setIsNull(true);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(parent);
+//            parent.setName("");
+//            parent.setValue("");
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(parent);
+//            parent.setName("");
+//            parent.setValue("");
         }
     }
 
@@ -180,11 +186,17 @@ public class Parser {
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             arrayElement.setValue(getCurrentToken().getData());
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
-            arrayElement.setValue(getCurrentToken().getData());
+            arrayElement.setValue("");
+            arrayElement.setValue("");
+            arrayElement.setIsNull(true);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(arrayElement);
+            arrayElement.setName("");
+            arrayElement.setValue("");
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(arrayElement);
+            arrayElement.setName("");
+            arrayElement.setValue("");
         }
         arrayElement.setType(NodeType.VALUE);
         parent.put(arrayElement);

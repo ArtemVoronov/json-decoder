@@ -13,6 +13,7 @@ public class Node {
     private NodeType type;
     private List<Node> nodes;
     private Node parent;
+    private boolean isNull;
 
     Node() {
         this.nodes = new ArrayList<Node>();
@@ -22,6 +23,7 @@ public class Node {
         this.name = name;
         this.value = value;
         this.nodes = new ArrayList<Node>();
+        this.isNull = false;
     }
 
     public void put(Node node) {
@@ -31,7 +33,8 @@ public class Node {
 
     //TODO: make pretty printin (string concatenation in StringBuilder.append()
     public String getNodeInfo(String indent) {
-        StringBuilder info = new StringBuilder(indent + "[:" + getType() + " " + getName() + " " + getValue() + "]");
+        StringBuilder info = new StringBuilder(indent + "[:" + getType() + " " + getName() +
+                " " + getValue() + " " + isNull() + "]");
         for (Node node : nodes) {
             info.append("\n" + node.getNodeInfo(indent + " "));
         }
@@ -77,5 +80,13 @@ public class Node {
 
     public void setParent(Node parent) {
         this.parent = parent;
+    }
+
+    public boolean isNull() {
+        return isNull;
+    }
+
+    public void setIsNull(boolean isNull) {
+        this.isNull = isNull;
     }
 }
