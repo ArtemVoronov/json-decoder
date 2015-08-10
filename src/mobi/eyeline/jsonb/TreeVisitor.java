@@ -11,21 +11,26 @@ import java.util.*;
  */
 public class TreeVisitor {
 
-    public Set<Field> findFields(Class<?> clazz, Class<? extends Annotation> ann) {
-        Set<Field> set = new HashSet<>();
+    /**
+     * @param clazz - class where should be fields with @JSONProperty annotation
+     * @param ann - annotation of the field (generally it should be JSONProperty.class
+     * @return map where key is name of field in lower case, value is Field.class instance
+     */
+    private Map<String, Field> findFields(Class<?> clazz, Class<? extends Annotation> ann) {
+        Map<String, Field> map = new HashMap<>();
         Class<?> c = clazz;
         while (c != null) {
             for (Field field : c.getDeclaredFields()) {
                 if (field.isAnnotationPresent(ann)) {
-                    set.add(field);
+                    map.put(field.getName().toLowerCase(), field);
                 }
             }
             c = c.getSuperclass();
         }
-        return set;
+        return map;
     }
 
-    public boolean isSetter(Method method){
+    private boolean isSetter(Method method){
         if (!method.getName().startsWith("set")) {
             return false;
         }
@@ -35,7 +40,7 @@ public class TreeVisitor {
         return true;
     }
 
-    public Method getSetter(Field field, Class<?> clazz) {
+    private Method getSetter(Field field, Class<?> clazz) {
         Method[] methods = clazz.getMethods();
         for (Method method : methods){
             if (isSetter(method) && (method.getName().toLowerCase().endsWith(field.getName().toLowerCase()))) {
@@ -46,7 +51,7 @@ public class TreeVisitor {
         return null;
     }
 
-    public void visitArrayNode(ArrayList arrayList, Node top, Class<?> type, boolean serialize)
+    private void visitArrayNode(ArrayList arrayList, Node top, Class<?> type, boolean serialize)
             throws InstantiationException, IllegalAccessException, UnmarshallerException {
         Queue<Node> queue=new LinkedList<>();
         queue.add(top);
@@ -62,7 +67,7 @@ public class TreeVisitor {
         } while (!queue.isEmpty());
     }
 
-    public void initArrayElement(Node node, ArrayList arrayList, Class<?> type, boolean serialize)
+    private void initArrayElement(Node node, ArrayList arrayList, Class<?> type, boolean serialize)
             throws IllegalAccessException, InstantiationException, UnmarshallerException {
         Object value = null;
         if (node.isNull()) {
@@ -92,6 +97,8 @@ public class TreeVisitor {
             value = Boolean.valueOf(node.getValue());
         } else if (type.isArray()) {
             //TODO
+            throw new UnmarshallerException("Wrong format of input string: " +
+                    "array element should have a key and it must be equal to java-object attribute name");
         } else {
             //else -> object
             value = type.newInstance();
@@ -102,7 +109,7 @@ public class TreeVisitor {
         arrayList.add(value);
     }
 
-    public void check(Node node, Set<Field> fields, Class<?> clazz, Object obj) throws UnmarshallerException {
+    private void check(Node node, Map<String, Field> fields, Class<?> clazz, Object obj) throws UnmarshallerException {
 
         //in all cases null is default value (for primitive types, for wrappers and for complex objects
         //exclusion is only array elements, case of [..., null, ...]
@@ -110,7 +117,10 @@ public class TreeVisitor {
             return;
         }
 
-        for (Field field : fields) {
+        String nodeName = node.getName().toLowerCase();
+        if (fields.containsKey(nodeName)) {
+            Field field = fields.get(nodeName);
+
             //variable name should be == json key name
             if (node.getName().toLowerCase().equals(field.getName().toLowerCase())) {
                 Method setter = getSetter(field, clazz);
@@ -140,7 +150,6 @@ public class TreeVisitor {
                     } else if (type.equals(Boolean.class)) {
                         value = Boolean.valueOf(node.getValue());
                     } else if (type.isArray()) {
-                        //TODO: resolve casting problem
                         boolean serialize = field.getAnnotation(JSONProperty.class).serializeIfNull();
                         List<Node> childs = node.getNodes();
                         Class componentType = field.getType().getComponentType();
@@ -246,6 +255,8 @@ public class TreeVisitor {
                             setter.invoke(obj, new Object[] {result} );
                         } else if (componentType.isArray()) {
                             //TODO
+                            throw new UnmarshallerException("Wrong format of input string: " +
+                                    "array VALUES should be delimited by commas");
                         } else {
                             Object[] objects =  (Object[]) Array.newInstance(componentType, valueArray.length);
                             System.arraycopy(valueArray,0,objects,0,valueArray.length);
@@ -275,7 +286,7 @@ public class TreeVisitor {
 
     }
 
-    public void cutBranch(Node branch) {
+    private void cutBranch(Node branch) {
         List<Node> nodes = branch.getNodes();
         for (Node node : nodes) {
             node.setParent(null);
@@ -286,7 +297,7 @@ public class TreeVisitor {
     //watching nodes for JSONProperty fields
     public void visitTree(Node top, Object obj) throws UnmarshallerException {
         Class clazz = obj.getClass();
-        Set<Field> fields = findFields(clazz, JSONProperty.class);
+        Map<String, Field> fields = findFields(clazz, JSONProperty.class);
         Queue<Node> queue=new LinkedList<>();
         queue.add(top);
         do {

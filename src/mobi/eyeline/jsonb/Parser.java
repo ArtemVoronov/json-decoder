@@ -12,15 +12,15 @@ public class Parser {
     private TokenType lastTokenType;
     private TokenType currentTokenType;
     //all tokens
-    List<Token> tokens;
-    Iterator<Token> iterator;
+    private List<Token> tokens;
+    private Iterator<Token> iterator;
     private Node tree;
 
-    //then make lexical analysis -> now we have stream of tokens
+    //lexical analysis -> stream of tokens
     public void init(String input) {
         try {
-            tokens = Lexer.lex(input);
-            iterator = tokens.iterator();
+            setTokens(Lexer.lex(input));
+            iterator = getTokens().iterator();
             setLastToken(new Token(TokenType.EMPTY, ""));
             setLastTokenType(TokenType.EMPTY);
             setCurrentToken(new Token(TokenType.EMPTY, ""));
@@ -38,7 +38,7 @@ public class Parser {
             throw new UnmarshallerException("Calling next() for EOF token");
         }
 
-        lastToken = getCurrentToken();
+        setLastToken(getCurrentToken());
         setLastTokenType(getCurrentToken().getType());
         if (iterator.hasNext()) {
             setCurrentToken(iterator.next());
@@ -46,7 +46,7 @@ public class Parser {
         }
 
         //TODO: comment debug info later
-        System.out.println("last: " + lastToken.toString());
+        System.out.println("last: " + getLastToken().toString());
         System.out.println("current: " + getCurrentToken().toString());
         System.out.println("----------");
     }
@@ -100,7 +100,10 @@ public class Parser {
     }
 
     public void parsePair(Node parent) throws UnmarshallerException {
-        if (getCurrentTokenType().equals(TokenType.EOF)) {
+        //if it is empty object
+        if (getCurrentTokenType().equals(TokenType.RBRACE)) {
+            parent.setName("");
+            parent.setValue("");
             return;
         }
         Node pairNode = new Node();
@@ -155,12 +158,8 @@ public class Parser {
             parent.setIsNull(true);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(parent);
-//            parent.setName("");
-//            parent.setValue("");
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(parent);
-//            parent.setName("");
-//            parent.setValue("");
         }
     }
 
@@ -176,8 +175,12 @@ public class Parser {
         Node arrayElement = new Node();
 
         //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
-        if (getCurrentTokenType().equals(TokenType.STRING)) {
+        //or RBRACKET if it is empty array
+        if (getCurrentTokenType().equals(TokenType.RBRACKET)) {
+            return;
+        }
 
+        if (getCurrentTokenType().equals(TokenType.STRING)) {
             arrayElement.setValue(getCurrentToken().getData());
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             arrayElement.setValue(getCurrentToken().getData());
@@ -209,102 +212,12 @@ public class Parser {
         }
     }
 
-    public static void main(String[] args) {
-        String json="{" +
-                "\"stringProp\":\"stringValue\"," +
-                "\"intProp\":123," +
-                "\"floatProp\":55.5," +
-                "\"unknownProp\":null,"+
-                "\"booleanProp_1\":true,"+
-                "\"booleanProp_2\":false"+
-                "}";
-//        String json2="[" +
-//                "\"stringValue\"," +
-//                "123," +
-//                "55.5," +
-//                "null,"+
-//                "true,"+
-//                "false"+
-//                "]";
-//        String json3="{" +
-//                "\"obj_1\":" +
-//                    "{" +
-//                        "\"inner_obj_1\":" +
-//                            "{" +
-//                                "\"innerStringProp\":\"innerStringVal\"" +
-//                            "}" +
-//                    "}," +
-//                "\"obj_2\":" +
-//                    "{" +
-//                        "\"stringProp\":\"stringValue\"," +
-//                        "\"intProp\":123," +
-//                        "\"floatProp\":55.5," +
-//                        "\"unknownProp\":null,"+
-//                        "\"booleanProp_1\":true,"+
-//                        "\"booleanProp_2\":false"+
-//                    "}" +
-//                "}";
-        String json4="{" +
-                "\"arr_1\":[1,2]," +
-                "\"arr_2\":[3,4]" +
-                "}";
-
-//        String json_inner="{" +
-//                "\"innerObject1\" : { " +
-//                "\"stringProp\":\"stringValue\","+
-//                "\"intProp\":123,"+
-//                "\"booleanProp\":true"+
-//                "}," +
-//                "\"innerObject2\" : {" +
-//                "\"stringProp\":\"stringValue2\","+
-//                "\"intProp\":1232,"+
-//                "\"booleanProp\":false"+
-//                "},"+
-//                "\"stringProp\":\"stringVal2\","+
-//                "\"unknownProp\": {\"key\":false}"+
-//                "}";
-//        String json_array = "{"+
-//                "\"intArray\" : [55e-2,2],"+
-//                "\"stringArray\" : [\"3\",\"4\",  null],"+
-//                "\"booleanArray\" : [true,false,true],"+
-//                "\"objectArray\" : [{\"intProp\":1}, {\"intProp\" : 2}, null]"+
-//                "}";
-        Parser parser = new Parser();
-        parser.init(json);
-        try {
-            parser.next();
-            Node tree = parser.getTree();
-            parser.parse(tree);
-            parser.checkEOF();
-            System.out.println(tree.getNodeInfo(""));
-        } catch (UnmarshallerException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public Token getLastToken() {
         return lastToken;
     }
 
     public void setLastToken(Token lastToken) {
         this.lastToken = lastToken;
-    }
-
-    public Node getTree() {
-        return tree;
-    }
-
-    public void setTree(Node tree) {
-        this.tree = tree;
-    }
-
-    public TokenType getCurrentTokenType() {
-        return currentTokenType;
-    }
-
-    public void setCurrentTokenType(TokenType currentTokenType) {
-        this.currentTokenType = currentTokenType;
     }
 
     public Token getCurrentToken() {
@@ -321,5 +234,29 @@ public class Parser {
 
     public void setLastTokenType(TokenType lastTokenType) {
         this.lastTokenType = lastTokenType;
+    }
+
+    public TokenType getCurrentTokenType() {
+        return currentTokenType;
+    }
+
+    public void setCurrentTokenType(TokenType currentTokenType) {
+        this.currentTokenType = currentTokenType;
+    }
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(List<Token> tokens) {
+        this.tokens = tokens;
+    }
+
+    public Node getTree() {
+        return tree;
+    }
+
+    public void setTree(Node tree) {
+        this.tree = tree;
     }
 }
