@@ -5,7 +5,6 @@ import mobi.eyeline.jsonb.annotations.JSONProperty;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * TreeVisitor is used for watching tree nodes and creating java objects according of deserializing class info:
@@ -158,7 +157,6 @@ public class TreeVisitor {
                             "array element type is not boolean");
                 }
             } else if (type.isArray()) {
-                //TODO
                 //array element type
                 Class componentType = type.getComponentType();
 
@@ -173,27 +171,21 @@ public class TreeVisitor {
                     visitArrayNode(elements, valueNode, componentType, serialize);
                 }
 
-                value = elements.toArray();
-                //check all cases for java types, cast and save value
-                Object[] result =  (Object[]) Array.newInstance(componentType, elements.size());
-                System.arraycopy(value, 0, result, 0, elements.size());
-
-//                Object[] array = castArray(componentType, elements);
+                //cast array
+                Object[] result = castArray(componentType, elements);
 
                 //delete processed node
                 cutBranch(node);
 
-                list.add(result);
+                //add array for list,
+                //IMPORTANT: arrays are wrapped in Object[], because we takes [0] every time
+                list.add(result[0]);
                 return;
-
-//                throw new UnmarshallerException("Wrong format of input string: " +
-//                        "array element should have a key and it must be equal to java-object attribute name");
             } else {
                 //else -> object
                 value = type.newInstance();
                 visitTree(node, value);
                 cutBranch(node);
-
             }
             list.add(value);
         } catch (NumberFormatException ex) {
@@ -213,7 +205,8 @@ public class TreeVisitor {
      * @param obj object of deserialization
      * @throws UnmarshallerException
      */
-    private void check(Node node, Map<String, Field> fields, Class<?> clazz, Object obj) throws UnmarshallerException {
+    private void check(Node node, Map<String, Field> fields, Class<?> clazz, Object obj)
+            throws UnmarshallerException {
 
         //in all cases null is default value (for primitive types, for wrappers and for complex objects
         //exclusion is only array elements, case of [..., null, ...]
@@ -273,7 +266,6 @@ public class TreeVisitor {
                         }
 
                         //check all cases for java types, cast and save value
-//                        castAndSave(componentType, list, setter, obj);
                         valueArray = castArray(componentType, list);
 
                         setter.invoke(obj, valueArray );
@@ -291,8 +283,8 @@ public class TreeVisitor {
                     //set value
                     setter.invoke(obj,value);
 
-                    //TODO: comment debug info later
-                    System.out.println("set " + field.getName() +"  == " + value);
+                    //debug info
+                    //System.out.println("set " + field.getName() +"  == " + value);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
@@ -306,16 +298,15 @@ public class TreeVisitor {
     }
 
     /**
-     * cast array field and save it in the object
+     * cast array to field type
      * @param componentType type of array elements
-     * @param list list of values that shuld be casted
-     * @param setter setter method which will be invoked
-     * @param obj object of deserialization
+     * @param list list of values that should be casted
+     * @return casted array wrapped in Object[]
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      * @throws UnmarshallerException
      */
-    private void castAndSave(Class<?> componentType, List list, Method setter, Object obj)
+    private Object[] castArray(Class<?> componentType, List list)
             throws InvocationTargetException, IllegalAccessException, UnmarshallerException {
         Object[] valueArray = list.toArray();
         if (componentType.equals(Integer.TYPE)) {
@@ -327,7 +318,7 @@ public class TreeVisitor {
                     result[i] = ((Integer)valueArray[i]).intValue();
                 }
             }
-            setter.invoke(obj,result);
+            return new Object[]{result};
         } else if (componentType.equals(Integer.class)) {
             Integer[] result = new Integer[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -337,7 +328,7 @@ public class TreeVisitor {
                     result[i] = Integer.valueOf(valueArray[i].toString());
                 }
             }
-            setter.invoke(obj, new Object[] {result} );
+            return new Object[]{result};
         } else if (componentType.equals(String.class)) {
             String[] result = new String[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -347,7 +338,7 @@ public class TreeVisitor {
                     result[i] = valueArray[i].toString();
                 }
             }
-            setter.invoke(obj, new Object[] {result} );
+            return new Object[]{result};
         } else if (componentType.equals(Boolean.TYPE)) {
             boolean[] result = new boolean[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -357,7 +348,7 @@ public class TreeVisitor {
                     result[i] = ((Boolean)valueArray[i]).booleanValue();
                 }
             }
-            setter.invoke(obj,result);
+            return new Object[]{result};
         } else if (componentType.equals(Boolean.class)) {
             Boolean[] result = new Boolean[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -367,7 +358,7 @@ public class TreeVisitor {
                     result[i] = Boolean.valueOf(valueArray[i].toString());
                 }
             }
-            setter.invoke(obj, new Object[] {result} );
+            return new Object[]{result};
         } else if (componentType.equals(Double.TYPE)) {
             double[] result = new double[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -377,7 +368,7 @@ public class TreeVisitor {
                     result[i] = ((Double)valueArray[i]).doubleValue();
                 }
             }
-            setter.invoke(obj,result);
+            return new Object[]{result};
         } else if (componentType.equals(Double.class)) {
             Double[] result = new Double[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -387,7 +378,7 @@ public class TreeVisitor {
                     result[i] = Double.valueOf(valueArray[i].toString());
                 }
             }
-            setter.invoke(obj, new Object[] {result} );
+            return new Object[]{result};
         } else if (componentType.equals(Float.TYPE)) {
             float[] result = new float[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -398,7 +389,7 @@ public class TreeVisitor {
                 }
 
             }
-            setter.invoke(obj,result);
+            return new Object[]{result};
         } else if (componentType.equals(Float.class)) {
             Float[] result = new Float[valueArray.length];
             for (int i = 0; i < valueArray.length; i++) {
@@ -408,129 +399,16 @@ public class TreeVisitor {
                     result[i] = Float.valueOf(valueArray[i].toString());
                 }
             }
-            setter.invoke(obj, new Object[] {result} );
+            return new Object[]{result};
         } else if (componentType.isArray()) {
-            //TODO
-//            getStuffFromArray(valueArray);
-//            throw new UnmarshallerException("Wrong format of input string: " +
-//                    "array VALUES should be delimited by commas");
-//            String[][] asd = {{"tt"},{"ww"}};
-//            setter.invoke(obj, new Object[][] {asd } );
+            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
+            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
+            return new Object[] {result};
         } else {
-            Object[] objects =  (Object[]) Array.newInstance(componentType, valueArray.length);
-            System.arraycopy(valueArray,0,objects,0,valueArray.length);
-            setter.invoke(obj, new Object[] {objects} );
+            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
+            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
+            return new Object[] {result};
         }
-    }
-
-
-    private Object[] castArray(Class<?> componentType, List list)
-            throws InvocationTargetException, IllegalAccessException, UnmarshallerException {
-        Object[] valueArray = list.toArray();
-        Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
-        System.arraycopy(valueArray, 0, result, 0, valueArray.length);
-        return new Object[] {result};
-//        if (componentType.equals(Integer.TYPE)) {
-//            int[] result = new int[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    continue;
-//                } else {
-//                    result[i] = ((Integer)valueArray[i]).intValue();
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Integer.class)) {
-//            Integer[] result = new Integer[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    result[i] = null;
-//                } else {
-//                    result[i] = Integer.valueOf(valueArray[i].toString());
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(String.class)) {
-//            String[] result = new String[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    result[i] = null;
-//                } else {
-//                    result[i] = valueArray[i].toString();
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Boolean.TYPE)) {
-//            boolean[] result = new boolean[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    continue;
-//                } else {
-//                    result[i] = ((Boolean)valueArray[i]).booleanValue();
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Boolean.class)) {
-//            Boolean[] result = new Boolean[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    result[i] = null;
-//                } else {
-//                    result[i] = Boolean.valueOf(valueArray[i].toString());
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Double.TYPE)) {
-//            double[] result = new double[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    continue;
-//                } else {
-//                    result[i] = ((Double)valueArray[i]).doubleValue();
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Double.class)) {
-//            Double[] result = new Double[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    result[i] = null;
-//                } else {
-//                    result[i] = Double.valueOf(valueArray[i].toString());
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Float.TYPE)) {
-//            float[] result = new float[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    continue;
-//                } else {
-//                    result[i] = ((Float)valueArray[i]).floatValue();
-//                }
-//
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.equals(Float.class)) {
-//            Float[] result = new Float[valueArray.length];
-//            for (int i = 0; i < valueArray.length; i++) {
-//                if (valueArray[i] == null) {
-//                    result[i] = null;
-//                } else {
-//                    result[i] = Float.valueOf(valueArray[i].toString());
-//                }
-//            }
-//            return new Object[]{result};
-//        } else if (componentType.isArray()) {
-//            //TODO
-//            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
-//            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
-//            return new Object[] {result};
-//        } else {
-//            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
-//            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
-//            return new Object[] {result};
-//        }
     }
 
     /**

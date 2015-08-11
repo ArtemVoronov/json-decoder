@@ -2,7 +2,6 @@ package mobi.eyeline.jsonb;
 
 import org.junit.Test;
 
-import java.util.List;
 
 /**
  * Created by Artem Voronov on 11.08.2015.

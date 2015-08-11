@@ -1,10 +1,8 @@
 package mobi.eyeline.jsonb;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,7 +11,6 @@ import static org.junit.Assert.assertNull;
 
 public class UnmarshallerTest {
 
-    @Ignore
     @Test
     public void testDeserialize_SimpleProps() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -31,7 +28,6 @@ public class UnmarshallerTest {
         assertEquals(true, obj.isBooleanProp());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_InnerObjectProp() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -61,7 +57,6 @@ public class UnmarshallerTest {
         assertEquals("stringVal2", obj.getStringProp());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_IntArrayProp() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -87,7 +82,6 @@ public class UnmarshallerTest {
         assertNull(obj.getObjectArray()[2]);
     }
 
-    @Ignore
     @Test
     public void testDeserialize_SimpleObject() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -117,7 +111,6 @@ public class UnmarshallerTest {
         assertEquals(true, obj.isBooleanPropPrimitive());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_ComplexObject() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -182,7 +175,6 @@ public class UnmarshallerTest {
         assertEquals(true, array[1].isBooleanPropPrimitive());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_TheMostComplexObject() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -280,7 +272,6 @@ public class UnmarshallerTest {
         }
     }
 
-    @Ignore
     @Test
     public void testDeserialize_SimpleObject_Null() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -312,7 +303,6 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_SerializableArrays_Null() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -376,7 +366,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test
     public void testDeserialize_NonSerializableArrays_Null() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -429,7 +418,6 @@ public class UnmarshallerTest {
         assertEquals(2, stringPropArray.length);
     }
 
-    @Ignore
     @Test
     public void testDeserialize_EmptyObjects1() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -450,7 +438,6 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_EmptyObjects2() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -478,7 +465,6 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
-    @Ignore
     @Test
     public void testDeserialize_EmptyArrays1() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -491,7 +477,7 @@ public class UnmarshallerTest {
                 "\"floatPropPrimitiveArray\" : []," +
                 "\"floatPropArray\" : []," +
                 "\"booleanPropPrimitiveArray\" : []," +
-                "\"booleanPropArray\" : []," +
+                "\"booleanPropArray\" : []" +
                 "}";
         double delta = 1e-15;
 
@@ -519,7 +505,6 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_String() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -534,7 +519,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Integer() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -548,8 +532,7 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
 
     }
-
-    @Ignore
+    
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Boolean() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -564,7 +547,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Double() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -579,7 +561,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Float() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -594,7 +575,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_IntegerPrimitive() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -609,7 +589,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_BooleanPrimitive() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -624,7 +603,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_DoublePrimitive() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -639,7 +617,6 @@ public class UnmarshallerTest {
 
     }
 
-    @Ignore
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_FloatPrimitive() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
@@ -654,18 +631,69 @@ public class UnmarshallerTest {
 
     }
 
-//    @Ignore
     @Test
     public void testDeserialize_MultiDimensional() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
 
         String json = "{" +
-                "\"multiString\" : [ [\"text1\"] , [\"text2\"] ]" +
+                "\"multiString\" : [ [\"text1\", \"text2\"] , [\"text3\", \"text4\"] ]," +
+                "\"multiIntPrimitive\" : [ [1, 2] , [3, 4] ]," +
+                "\"multiBooleanPrimitive\" : [ [true, true] , [true, true] ]," +
+                "\"multiDoublePrimitive\" : [ [1.5, 2.5] , [3.5, 4.5] ]," +
+                "\"multiFloatPrimitive\" :[ [1.5, 2.5] , [3.5, 4.5] ]," +
+                "\"multiInt\" : [ [11, 12] , [13, 14] ]," +
+                "\"multiBoolean\" :  [ [true, true, true] , [true, true, true] ]," +
+                "\"multiDouble\" : [ [11.5, 12.5] , [13.5, 14.5] ]," +
+                "\"multiFloat\" : [ [11.5, 12.5] , [13.5, 14.5] ]" +
                 "}";
 
         double delta = 1e-15;
 
         MultiDimensionalArrays obj = Unmarshaller.unmarshal(json, MultiDimensionalArrays.class);
+
+        assertNotNull(obj);
+
+        int[][] multiIntPrimitive = obj.getMultiIntPrimitive();
+        Integer[][] multiInt = obj.getMultiInt();
+        double[][] multiDoublePrimitive = obj.getMultiDoublePrimitive();
+        Double[][] multiDouble = obj.getMultiDouble();
+        float[][] multiFloatPrimitive = obj.getMultiFloatPrimitive();
+        Float[][] multiFloat = obj.getMultiFloat();
+        boolean[][] multiBooleanPrimitive = obj.getMultiBooleanPrimitive();
+        Boolean[][] multiBoolean = obj.getMultiBoolean();
+        String[][] multiString = obj.getMultiString();
+
+        assertNotNull(multiIntPrimitive);
+        assertNotNull(multiInt);
+        assertNotNull(multiDoublePrimitive);
+        assertNotNull(multiDouble);
+        assertNotNull(multiFloatPrimitive);
+        assertNotNull(multiFloat);
+        assertNotNull(multiBooleanPrimitive);
+        assertNotNull(multiBoolean);
+        assertNotNull(multiString);
+
+        assertEquals(2, multiIntPrimitive.length);
+        assertEquals(2, multiInt.length);
+        assertEquals(2, multiDoublePrimitive.length);
+        assertEquals(2, multiDouble.length);
+        assertEquals(2, multiFloatPrimitive.length);
+        assertEquals(2, multiFloat.length);
+        assertEquals(2, multiBooleanPrimitive.length);
+        assertEquals(2, multiBoolean.length);
+        assertEquals(2, multiString.length);
+
+
+        assertEquals(1, obj.getMultiIntPrimitive()[0][0]);
+        assertEquals(new Integer(11), obj.getMultiInt()[0][0]);
+        assertEquals(1.5, obj.getMultiDoublePrimitive()[0][0], delta);
+        assertEquals(new Double(11.5), obj.getMultiDouble()[0][0]);
+        assertEquals(1.5, obj.getMultiFloatPrimitive()[0][0], delta);
+        assertEquals(new Float(11.5), obj.getMultiFloat()[0][0]);
+        assertEquals(true, obj.getMultiBooleanPrimitive()[0][0]);
+        assertEquals(true, obj.getMultiBoolean()[0][0]);
+        assertEquals("text1", obj.getMultiString()[0][0]);
+
 
     }
 }

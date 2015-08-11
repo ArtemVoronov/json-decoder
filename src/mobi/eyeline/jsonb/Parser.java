@@ -54,10 +54,11 @@ public class Parser {
             setCurrentTokenType(getCurrentToken().getType());
         }
 
-        //TODO: comment debug info later
-        System.out.println("last: " + getLastToken().toString());
-        System.out.println("current: " + getCurrentToken().toString());
-        System.out.println("----------");
+        //debug info
+        //System.out.println("last: " + getLastToken().toString());
+        //System.out.println("current: " + getCurrentToken().toString());
+        //System.out.println("----------");
+
     }
 
     /**
