@@ -1,18 +1,26 @@
 package mobi.eyeline.jsonb;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by voronov on 02.08.2015.
+ * Lexer transforms json-string to token stream
+ * Created by Artem Voronov on 02.08.2015.
  */
 public class Lexer {
 
-    public static ArrayList<Token> lex(String input) throws UnmarshallerException {
+    /**
+     * return list of tokens
+     * @param input json-string
+     * @return list of tokens
+     * @throws UnmarshallerException for unknown tokens (see json.org for details)
+     */
+    public static List<Token> lex(String input) throws UnmarshallerException {
 
         // the tokens to return
-        ArrayList<Token> tokens = new ArrayList<Token>();
+        List<Token> tokens = new ArrayList<Token>();
 
         // lexer logic begins here
         StringBuffer tokenPatternsBuffer = new StringBuffer();

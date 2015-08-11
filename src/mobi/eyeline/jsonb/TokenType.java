@@ -1,9 +1,11 @@
 package mobi.eyeline.jsonb;
 
 /**
- * Created by voronov on 04.08.2015.
+ * Token types according JSON rules. Regexp for each from http://json.org/
+ * Created by Artem Voronov on 04.08.2015.
  */
 public enum TokenType {
+    //EMPTY - special status for not initialized token (just for starting of iteration)
     EMPTY("\\A\\z"),
     WHITESPACE("\\s+"),
     LBRACE("\\{"),

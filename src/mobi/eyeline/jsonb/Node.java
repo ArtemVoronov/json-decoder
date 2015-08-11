@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by voronov on 04.08.2015.
- *
+ * Tree structure of JSON objects and arrays. It is used by Parser class.
+ * Created by Artem Voronov on 04.08.2015.
  */
 public class Node {
     private String name;
@@ -16,7 +16,10 @@ public class Node {
     private boolean isNull;
 
     Node() {
+        this.name = "";
+        this.value = "";
         this.nodes = new ArrayList<Node>();
+        this.isNull = false;
     }
 
     Node(String name, String value) {

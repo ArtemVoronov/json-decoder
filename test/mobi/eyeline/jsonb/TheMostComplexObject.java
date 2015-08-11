@@ -4,7 +4,7 @@ import mobi.eyeline.jsonb.annotations.JSONObject;
 import mobi.eyeline.jsonb.annotations.JSONProperty;
 
 /**
- * Created by voronov on 10.08.2015.
+ * Created by Artem Voronov on 10.08.2015.
  */
 @JSONObject
 public class TheMostComplexObject extends ComplexObject{

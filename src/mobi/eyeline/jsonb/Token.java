@@ -1,7 +1,8 @@
 package mobi.eyeline.jsonb;
 
 /**
- * Created by voronov on 04.08.2015.
+ * Token is a part of JSON notation (http://json.org/).
+ * Created by Artem Voronov on 04.08.2015.
  */
 public class Token {
     private TokenType type;

@@ -4,7 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by voronov on 03.08.2015.
+ * Parser class creates tree structure according JSON rules. Input is a stream of tokens from Lexer class.
+ * Base idea is iterating through tokens and checking JSON rules.
+ * Created by Artem Voronov on 03.08.2015.
  */
 public class Parser {
     private Token lastToken;
@@ -16,11 +18,16 @@ public class Parser {
     private Iterator<Token> iterator;
     private Node tree;
 
+    /**
+     * initiate token stream, iterator for them, and root of the tree
+     * @param input JSON-string
+     */
     //lexical analysis -> stream of tokens
     public void init(String input) {
         try {
             setTokens(Lexer.lex(input));
             iterator = getTokens().iterator();
+            //EMPTY - special status for not initialized token (just for starting of iteration)
             setLastToken(new Token(TokenType.EMPTY, ""));
             setLastTokenType(TokenType.EMPTY);
             setCurrentToken(new Token(TokenType.EMPTY, ""));
@@ -33,6 +40,10 @@ public class Parser {
         }
     }
 
+    /**
+     * iteration step, it keeps current and last token.
+     * @throws UnmarshallerException if current token is EOF
+     */
     public void next() throws UnmarshallerException {
         if (getCurrentTokenType().equals(TokenType.EOF)) {
             throw new UnmarshallerException("Calling next() for EOF token");
@@ -51,7 +62,11 @@ public class Parser {
         System.out.println("----------");
     }
 
-    //then start looking these tokens and using json rules for creating tree structure
+    /**
+     * start looking these tokens and using json rules for creating tree structure
+     * @param parent Node for parsing
+     * @throws UnmarshallerException if input has double LBRACE "{{....", should be "{string...."
+     */
     public void parse(Node parent) throws UnmarshallerException {
         //  end of recursion
         if (getCurrentTokenType().equals(TokenType.EOF)) {
@@ -76,13 +91,17 @@ public class Parser {
                 Node arrayNode = new Node();
                 arrayNode.setType(NodeType.ARRAY);
                 parent.put(arrayNode);
-                arrayNode.setName("");
-                arrayNode.setValue("");
                 parseArray(arrayNode);
             }
         }
     }
 
+
+    /**
+     * parse OBJECT '{...}'
+     * @param parent parent node
+     * @throws UnmarshallerException parsing errors of forgotten RBRACE, also parsing errors of PAIR and VALUE
+     */
     public void parseObject(Node parent) throws UnmarshallerException {
         //object is a collection of PAIRs delimited by COMMAs
         while (!getCurrentTokenType().equals(TokenType.RBRACE)) {
@@ -91,6 +110,10 @@ public class Parser {
         }
     }
 
+    /**
+     * invokes at the end of parser work
+     * @throws UnmarshallerException if last processed token is not EOF
+     */
     public void checkEOF() throws UnmarshallerException {
         next();
         if (!getCurrentTokenType().equals(TokenType.EOF)) {
@@ -99,11 +122,14 @@ public class Parser {
         }
     }
 
+    /**
+     * parse PAIR 'string : value'
+     * @param parent parent node
+     * @throws UnmarshallerException parsing errors of PAIR (see JSON grammar rules)
+     */
     public void parsePair(Node parent) throws UnmarshallerException {
         //if it is empty object
         if (getCurrentTokenType().equals(TokenType.RBRACE)) {
-            parent.setName("");
-            parent.setValue("");
             return;
         }
         Node pairNode = new Node();
@@ -126,8 +152,6 @@ public class Parser {
             //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
             parseObjectValue(pairNode);
             parent.put(pairNode);
-            parent.setName("");
-            parent.setValue("");
             next();
             //next should be COMMA or RBRACE
             if (!getCurrentTokenType().equals(TokenType.COMMA) && !getCurrentTokenType().equals(TokenType.RBRACE)) {
@@ -140,8 +164,13 @@ public class Parser {
         }
     }
 
+    /**
+     * parse VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
+     * @param parent parent node
+     * @throws UnmarshallerException parsing errors of VALUE (see JSON grammar rules)
+     */
     public void parseObjectValue(Node parent) throws UnmarshallerException {
-        //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
+        //current token should be a VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
         if (getCurrentTokenType().equals(TokenType.STRING)) {
             //remove double quotes
             String value =  getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
@@ -153,16 +182,22 @@ public class Parser {
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             parent.setValue(getCurrentToken().getData());
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
-            parent.setValue("");
-            parent.setName("");
             parent.setIsNull(true);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(parent);
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(parent);
+        } else {
+            throw new UnmarshallerException("Wrong format of input string: " +
+                    "unknown token for OBJECT VALUE");
         }
     }
 
+    /**
+     * parse ARRAY '[...]'
+     * @param parent parent node
+     * @throws UnmarshallerException parsing errors of forgotten RBRACKET, also parsing errors of VALUE
+     */
     public void parseArray(Node parent) throws UnmarshallerException {
         //array is an ordered list of values delimited by COMMAs
         while (!getCurrentTokenType().equals(TokenType.RBRACKET)) {
@@ -171,6 +206,11 @@ public class Parser {
         }
     }
 
+    /**
+     * parse VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
+     * @param parent parent node
+     * @throws UnmarshallerException parsing errors of VALUE (see JSON grammar rules)
+     */
     public void parseArrayValue(Node parent) throws UnmarshallerException {
         Node arrayElement = new Node();
 
@@ -189,17 +229,14 @@ public class Parser {
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             arrayElement.setValue(getCurrentToken().getData());
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
-            arrayElement.setValue("");
-            arrayElement.setValue("");
             arrayElement.setIsNull(true);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(arrayElement);
-            arrayElement.setName("");
-            arrayElement.setValue("");
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(arrayElement);
-            arrayElement.setName("");
-            arrayElement.setValue("");
+        } else {
+            throw new UnmarshallerException("Wrong format of input string: " +
+                    "unknown token for ARRAY VALUE");
         }
         arrayElement.setType(NodeType.VALUE);
         parent.put(arrayElement);

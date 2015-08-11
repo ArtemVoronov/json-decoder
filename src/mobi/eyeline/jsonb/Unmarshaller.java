@@ -1,8 +1,19 @@
 package mobi.eyeline.jsonb;
 
 
+/**
+ * Unmarshaller used for deserialization of JSON strings to java objects
+ */
 public class Unmarshaller {
 
+  /**
+   * deserialize json string to java object
+   * @param json input string
+   * @param clazz class of the object
+   * @param <T>
+   * @return
+   * @throws UnmarshallerException
+   */
   public static <T> T unmarshal(String json, Class<T> clazz) throws UnmarshallerException {
     Object obj = null;
     TreeVisitor visitor = new TreeVisitor();
@@ -17,10 +28,9 @@ public class Unmarshaller {
       System.out.println(tree.getNodeInfo(""));
 
       try {
-        String name = clazz.getName();
-        //created object
+        //create object
         obj = clazz.newInstance();
-        //find these fields in the tree and init object's fields
+        //walk through the tree and init object's fields
         visitor.visitTree(tree, obj);
 
       } catch (InstantiationException e) {
