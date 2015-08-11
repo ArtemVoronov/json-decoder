@@ -77,17 +77,15 @@ public class TreeVisitor {
      * @throws UnmarshallerException
      */
     private void visitArrayNode(List list, Node top, Class<?> type, boolean serialize)
-            throws InstantiationException, IllegalAccessException, UnmarshallerException {
+            throws InstantiationException, IllegalAccessException, UnmarshallerException, InvocationTargetException {
         Queue<Node> queue=new LinkedList<>();
         queue.add(top);
         do {
             if (!queue.isEmpty()) top=queue.poll();
             initArrayElement(top, list, type, serialize);
-            List<Node> childrens = top.getNodes();
-            if (childrens != null) {
-                for(Node child : childrens) {
-                    queue.add(child);
-                }
+            List<Node> children = top.getNodes();
+            if (children != null) {
+                queue.addAll(children);
             }
         } while (!queue.isEmpty());
     }
@@ -103,7 +101,7 @@ public class TreeVisitor {
      * @throws UnmarshallerException
      */
     private void initArrayElement(Node node, List list, Class<?> type, boolean serialize)
-            throws IllegalAccessException, InstantiationException, UnmarshallerException {
+            throws IllegalAccessException, InstantiationException, UnmarshallerException, InvocationTargetException {
         Object value = null;
         if (node.isNull()) {
             if (serialize) {
@@ -111,37 +109,100 @@ public class TreeVisitor {
             }
             return;
         }
+        try {
 
-        if (type.equals(String.class)) {
-            value = node.getValue().substring(1, node.getValue().length() - 1);
-        } else if (type.equals(Integer.TYPE)) {
-            value = Integer.parseInt(node.getValue());
-        } else if (type.equals(Integer.class)) {
-            value = Integer.valueOf(node.getValue());
-        } else if (type.equals(Double.TYPE)) {
-            value = Double.parseDouble(node.getValue());
-        } else if (type.equals(Double.class)) {
-            value = Double.valueOf(node.getValue());
-        } else if (type.equals(Float.TYPE)) {
-            value = Float.parseFloat(node.getValue());
-        } else if (type.equals(Float.class)) {
-            value = Float.valueOf(node.getValue());
-        } else if (type.equals(Boolean.TYPE)) {
-            value = Boolean.parseBoolean(node.getValue());
-        } else if (type.equals(Boolean.class)) {
-            value = Boolean.valueOf(node.getValue());
-        } else if (type.isArray()) {
-            //TODO
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "array element should have a key and it must be equal to java-object attribute name");
-        } else {
-            //else -> object
-            value = type.newInstance();
-            visitTree(node, value);
-            cutBranch(node);
+            if (type.equals(String.class)) {
+                String text = node.getValue();
+                int len = text.length();
+                if (len > 1) {
+                    String starts = text.substring(0, 1);
+                    String ends = text.substring(len-1,len);
+                    if (starts.equals("\"") && ends.equals("\"")) {
+                        value = node.getValue().substring(1, node.getValue().length() - 1);
+                    } else {
+                        throw new UnmarshallerException("Type mismatch: " +
+                                "array type is string, but element is without double quotes");
+                    }
+                } else {
+                    throw new UnmarshallerException("Type mismatch: " +
+                            "array type is string, but element is not");
+                }
 
+
+            } else if (type.equals(Integer.TYPE)) {
+                value = Integer.parseInt(node.getValue());
+            } else if (type.equals(Integer.class)) {
+                value = Integer.valueOf(node.getValue());
+            } else if (type.equals(Double.TYPE)) {
+                value = Double.parseDouble(node.getValue());
+            } else if (type.equals(Double.class)) {
+                value = Double.valueOf(node.getValue());
+            } else if (type.equals(Float.TYPE)) {
+                value = Float.parseFloat(node.getValue());
+            } else if (type.equals(Float.class)) {
+                value = Float.valueOf(node.getValue());
+            } else if (type.equals(Boolean.TYPE)) {
+                String booleanText = node.getValue().toLowerCase().trim();
+                if (booleanText.equals("false") || booleanText.equals("true")) {
+                    value = Boolean.parseBoolean(node.getValue());
+                } else {
+                    throw new UnmarshallerException("Type mismatch: " +
+                            "array element type is not boolean");
+                }
+            } else if (type.equals(Boolean.class)) {
+                String booleanText = node.getValue().toLowerCase().trim();
+                if (booleanText.equals("false") || booleanText.equals("true")) {
+                    value = Boolean.valueOf(node.getValue());
+                } else {
+                    throw new UnmarshallerException("Type mismatch: " +
+                            "array element type is not boolean");
+                }
+            } else if (type.isArray()) {
+                //TODO
+                //array element type
+                Class componentType = type.getComponentType();
+
+                //get node values of array
+                List<Node> children = node.getNodes();
+                List elements = new ArrayList<>();
+                Node arrayNode = children.iterator().next();
+                List<Node> valueNodes = arrayNode.getNodes();
+
+                //process array values and collect all data which should be serialized
+                for (Node valueNode : valueNodes) {
+                    visitArrayNode(elements, valueNode, componentType, serialize);
+                }
+
+                value = elements.toArray();
+                //check all cases for java types, cast and save value
+                Object[] result =  (Object[]) Array.newInstance(componentType, elements.size());
+                System.arraycopy(value, 0, result, 0, elements.size());
+
+//                Object[] array = castArray(componentType, elements);
+
+                //delete processed node
+                cutBranch(node);
+
+                list.add(result);
+                return;
+
+//                throw new UnmarshallerException("Wrong format of input string: " +
+//                        "array element should have a key and it must be equal to java-object attribute name");
+            } else {
+                //else -> object
+                value = type.newInstance();
+                visitTree(node, value);
+                cutBranch(node);
+
+            }
+            list.add(value);
+        } catch (NumberFormatException ex) {
+            throw new UnmarshallerException("Type mismatch: " +
+                    "array element type and array type of object are different");
+        } catch (StringIndexOutOfBoundsException ex) {
+            throw new UnmarshallerException("Type mismatch: " +
+                    "array type is string, but element is without double quotes");
         }
-        list.add(value);
     }
 
     /**
@@ -212,7 +273,10 @@ public class TreeVisitor {
                         }
 
                         //check all cases for java types, cast and save value
-                        castAndSave(componentType, list, setter, obj);
+//                        castAndSave(componentType, list, setter, obj);
+                        valueArray = castArray(componentType, list);
+
+                        setter.invoke(obj, valueArray );
 
                         //delete processed node
                         cutBranch(node);
@@ -347,13 +411,126 @@ public class TreeVisitor {
             setter.invoke(obj, new Object[] {result} );
         } else if (componentType.isArray()) {
             //TODO
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "array VALUES should be delimited by commas");
+//            getStuffFromArray(valueArray);
+//            throw new UnmarshallerException("Wrong format of input string: " +
+//                    "array VALUES should be delimited by commas");
+//            String[][] asd = {{"tt"},{"ww"}};
+//            setter.invoke(obj, new Object[][] {asd } );
         } else {
             Object[] objects =  (Object[]) Array.newInstance(componentType, valueArray.length);
             System.arraycopy(valueArray,0,objects,0,valueArray.length);
             setter.invoke(obj, new Object[] {objects} );
         }
+    }
+
+
+    private Object[] castArray(Class<?> componentType, List list)
+            throws InvocationTargetException, IllegalAccessException, UnmarshallerException {
+        Object[] valueArray = list.toArray();
+        Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
+        System.arraycopy(valueArray, 0, result, 0, valueArray.length);
+        return new Object[] {result};
+//        if (componentType.equals(Integer.TYPE)) {
+//            int[] result = new int[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    continue;
+//                } else {
+//                    result[i] = ((Integer)valueArray[i]).intValue();
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Integer.class)) {
+//            Integer[] result = new Integer[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    result[i] = null;
+//                } else {
+//                    result[i] = Integer.valueOf(valueArray[i].toString());
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(String.class)) {
+//            String[] result = new String[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    result[i] = null;
+//                } else {
+//                    result[i] = valueArray[i].toString();
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Boolean.TYPE)) {
+//            boolean[] result = new boolean[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    continue;
+//                } else {
+//                    result[i] = ((Boolean)valueArray[i]).booleanValue();
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Boolean.class)) {
+//            Boolean[] result = new Boolean[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    result[i] = null;
+//                } else {
+//                    result[i] = Boolean.valueOf(valueArray[i].toString());
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Double.TYPE)) {
+//            double[] result = new double[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    continue;
+//                } else {
+//                    result[i] = ((Double)valueArray[i]).doubleValue();
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Double.class)) {
+//            Double[] result = new Double[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    result[i] = null;
+//                } else {
+//                    result[i] = Double.valueOf(valueArray[i].toString());
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Float.TYPE)) {
+//            float[] result = new float[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    continue;
+//                } else {
+//                    result[i] = ((Float)valueArray[i]).floatValue();
+//                }
+//
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.equals(Float.class)) {
+//            Float[] result = new Float[valueArray.length];
+//            for (int i = 0; i < valueArray.length; i++) {
+//                if (valueArray[i] == null) {
+//                    result[i] = null;
+//                } else {
+//                    result[i] = Float.valueOf(valueArray[i].toString());
+//                }
+//            }
+//            return new Object[]{result};
+//        } else if (componentType.isArray()) {
+//            //TODO
+//            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
+//            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
+//            return new Object[] {result};
+//        } else {
+//            Object[] result =  (Object[]) Array.newInstance(componentType, valueArray.length);
+//            System.arraycopy(valueArray, 0, result, 0, valueArray.length);
+//            return new Object[] {result};
+//        }
     }
 
     /**

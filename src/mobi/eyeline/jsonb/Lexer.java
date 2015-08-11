@@ -15,9 +15,9 @@ public class Lexer {
      * return list of tokens
      * @param input json-string
      * @return list of tokens
-     * @throws UnmarshallerException for unknown tokens (see json.org for details)
+     * @throws LexerException for unknown tokens (see json.org for details)
      */
-    public static List<Token> lex(String input) throws UnmarshallerException {
+    public static List<Token> lex(String input) throws LexerException {
 
         // the tokens to return
         List<Token> tokens = new ArrayList<Token>();
@@ -41,8 +41,8 @@ public class Lexer {
                     //if we have wrong input (e.g. forgotten double quotes for string value)
                     if (tokenType.equals(TokenType.ERROR)) {
                         String token = matcher.group(tokenType.name());
-                        throw new UnmarshallerException("Wrong format of input string: " +
-                                "unknown token '" + token + "'");
+                        throw new LexerException("Wrong format of input string: " +
+                                "unknown token '" + token + "'", token);
                     }
                     if (!tokenType.equals(TokenType.WHITESPACE)) {
                         tokens.add(new Token(tokenType, matcher.group(tokenType.name())));

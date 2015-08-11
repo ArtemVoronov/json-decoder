@@ -1,5 +1,7 @@
 package mobi.eyeline.jsonb;
 
+import sun.security.util.PendingException;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,32 +23,28 @@ public class Parser {
     /**
      * initiate token stream, iterator for them, and root of the tree
      * @param input JSON-string
+     * @throws LexerException for unknown tokens
      */
     //lexical analysis -> stream of tokens
-    public void init(String input) {
-        try {
-            setTokens(Lexer.lex(input));
-            iterator = getTokens().iterator();
-            //EMPTY - special status for not initialized token (just for starting of iteration)
-            setLastToken(new Token(TokenType.EMPTY, ""));
-            setLastTokenType(TokenType.EMPTY);
-            setCurrentToken(new Token(TokenType.EMPTY, ""));
-            setCurrentTokenType(TokenType.EMPTY);
-            setTree(new Node(":root", ""));
-            getTree().setType(NodeType.ROOT);
-
-        } catch (UnmarshallerException e) {
-            e.printStackTrace();
-        }
+    public void init(String input) throws LexerException {
+        setTokens(Lexer.lex(input));
+        iterator = getTokens().iterator();
+        //EMPTY - special status for not initialized token (just for starting of iteration)
+        setLastToken(new Token(TokenType.EMPTY, ""));
+        setLastTokenType(TokenType.EMPTY);
+        setCurrentToken(new Token(TokenType.EMPTY, ""));
+        setCurrentTokenType(TokenType.EMPTY);
+        setTree(new Node(":root", ""));
+        getTree().setType(NodeType.ROOT);
     }
 
     /**
      * iteration step, it keeps current and last token.
-     * @throws UnmarshallerException if current token is EOF
+     * @throws ParserException if current token is EOF
      */
-    public void next() throws UnmarshallerException {
+    public void next() throws ParserException {
         if (getCurrentTokenType().equals(TokenType.EOF)) {
-            throw new UnmarshallerException("Calling next() for EOF token");
+            throw new ParserException("Calling next() for EOF token", getCurrentToken(), getLastToken());
         }
 
         setLastToken(getCurrentToken());
@@ -65,9 +63,9 @@ public class Parser {
     /**
      * start looking these tokens and using json rules for creating tree structure
      * @param parent Node for parsing
-     * @throws UnmarshallerException if input has double LBRACE "{{....", should be "{string...."
+     * @throws ParserException if input has double LBRACE "{{....", should be "{string...."
      */
-    public void parse(Node parent) throws UnmarshallerException {
+    public void parse(Node parent) throws ParserException {
         //  end of recursion
         if (getCurrentTokenType().equals(TokenType.EOF)) {
             return;
@@ -78,8 +76,8 @@ public class Parser {
             if (getCurrentTokenType().equals(TokenType.LBRACE)) {
                 //check for double braces
                 if (getLastTokenType().equals(TokenType.LBRACE)) {
-                    throw new UnmarshallerException("Wrong format of input string: " +
-                            "double LBRACE");
+                    throw new ParserException("Wrong format of input string: " +
+                            "double LBRACE", getCurrentToken(), getLastToken());
                 }
                 //create object Node, put it in the tree
                 Node objectNode = new Node();
@@ -100,9 +98,9 @@ public class Parser {
     /**
      * parse OBJECT '{...}'
      * @param parent parent node
-     * @throws UnmarshallerException parsing errors of forgotten RBRACE, also parsing errors of PAIR and VALUE
+     * @throws ParserException parsing errors of forgotten RBRACE, also parsing errors of PAIR and VALUE
      */
-    public void parseObject(Node parent) throws UnmarshallerException {
+    public void parseObject(Node parent) throws ParserException {
         //object is a collection of PAIRs delimited by COMMAs
         while (!getCurrentTokenType().equals(TokenType.RBRACE)) {
             next();
@@ -112,37 +110,45 @@ public class Parser {
 
     /**
      * invokes at the end of parser work
-     * @throws UnmarshallerException if last processed token is not EOF
+     * @throws ParserException if last processed token is not EOF
      */
-    public void checkEOF() throws UnmarshallerException {
+    public void checkEOF() throws ParserException {
         next();
         if (!getCurrentTokenType().equals(TokenType.EOF)) {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "expected EOF");
+            throw new ParserException("Wrong format of input string: " +
+                    "expected EOF", getCurrentToken(), getLastToken());
         }
     }
 
     /**
      * parse PAIR 'string : value'
      * @param parent parent node
-     * @throws UnmarshallerException parsing errors of PAIR (see JSON grammar rules)
+     * @throws ParserException parsing errors of PAIR (see JSON grammar rules)
      */
-    public void parsePair(Node parent) throws UnmarshallerException {
-        //if it is empty object
+    public void parsePair(Node parent) throws ParserException {
+        //if it is empty object or end
         if (getCurrentTokenType().equals(TokenType.RBRACE)) {
+            if (lastTokenType.equals(TokenType.COMMA)) {
+                throw new ParserException("Wrong format of input string: " +
+                        "unexpected comma before RBRACE", getCurrentToken(), getLastToken());
+            }
             return;
         }
         Node pairNode = new Node();
         pairNode.setType(NodeType.PAIR);
-
-        //current token should be a STRING
-        if (getCurrentTokenType().equals(TokenType.STRING)) {
-            //remove double quotes
-            String name =  getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
-            pairNode.setName(name);
-        } else {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "pair name should be a STRING");
+        try {
+            //current token should be a STRING
+            if (getCurrentTokenType().equals(TokenType.STRING)) {
+                //remove double quotes
+                String name = getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
+                pairNode.setName(name);
+            } else {
+                throw new ParserException("Wrong format of input string: " +
+                        "pair name should be a STRING", getCurrentToken(), getLastToken());
+            }
+        } catch (StringIndexOutOfBoundsException ex) {
+            throw new ParserException("Wrong format of input string: " +
+                    "current token is no a STRING", getCurrentToken(), getLastToken());
         }
 
         next();
@@ -155,26 +161,31 @@ public class Parser {
             next();
             //next should be COMMA or RBRACE
             if (!getCurrentTokenType().equals(TokenType.COMMA) && !getCurrentTokenType().equals(TokenType.RBRACE)) {
-                throw new UnmarshallerException("Wrong format of input string: " +
-                        "PAIRs should be delimited by commas");
+                throw new ParserException("Wrong format of input string: " +
+                        "PAIRs should be delimited by commas", getCurrentToken(), getLastToken());
             }
         } else {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "preceding token for COLON is not a STRING");
+            throw new ParserException("Wrong format of input string: " +
+                    "preceding token for COLON is not a STRING", getCurrentToken(), getLastToken());
         }
     }
 
     /**
      * parse VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
      * @param parent parent node
-     * @throws UnmarshallerException parsing errors of VALUE (see JSON grammar rules)
+     * @throws ParserException parsing errors of VALUE (see JSON grammar rules)
      */
-    public void parseObjectValue(Node parent) throws UnmarshallerException {
+    public void parseObjectValue(Node parent) throws ParserException {
         //current token should be a VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
         if (getCurrentTokenType().equals(TokenType.STRING)) {
-            //remove double quotes
-            String value =  getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
-            parent.setValue(value);
+            try {
+                //remove double quotes
+                String value = getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
+                parent.setValue(value);
+            } catch (StringIndexOutOfBoundsException ex) {
+                throw new ParserException("Wrong format of input string: " +
+                        "current token is no a STRING VALUE", getCurrentToken(), getLastToken());
+            }
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             parent.setValue(getCurrentToken().getData());
         } else if (getCurrentTokenType().equals(TokenType.TRUE)) {
@@ -188,17 +199,17 @@ public class Parser {
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(parent);
         } else {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "unknown token for OBJECT VALUE");
+            throw new ParserException("Wrong format of input string: " +
+                    "unknown token for OBJECT VALUE", getCurrentToken(), getLastToken());
         }
     }
 
     /**
      * parse ARRAY '[...]'
      * @param parent parent node
-     * @throws UnmarshallerException parsing errors of forgotten RBRACKET, also parsing errors of VALUE
+     * @throws ParserException parsing errors of forgotten RBRACKET, also parsing errors of VALUE
      */
-    public void parseArray(Node parent) throws UnmarshallerException {
+    public void parseArray(Node parent) throws ParserException {
         //array is an ordered list of values delimited by COMMAs
         while (!getCurrentTokenType().equals(TokenType.RBRACKET)) {
             next();
@@ -209,14 +220,18 @@ public class Parser {
     /**
      * parse VALUE: STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
      * @param parent parent node
-     * @throws UnmarshallerException parsing errors of VALUE (see JSON grammar rules)
+     * @throws ParserException parsing errors of VALUE (see JSON grammar rules)
      */
-    public void parseArrayValue(Node parent) throws UnmarshallerException {
+    public void parseArrayValue(Node parent) throws ParserException {
         Node arrayElement = new Node();
 
         //current token should be a VALUE:  STRING, NUMBER, TRUE, FALSE, NULL, {...}, [...]
         //or RBRACKET if it is empty array
         if (getCurrentTokenType().equals(TokenType.RBRACKET)) {
+            if (lastTokenType.equals(TokenType.COMMA)) {
+                throw new ParserException("Wrong format of input string: " +
+                        "unexpected comma before RBRACKET", getCurrentToken(), getLastToken());
+            }
             return;
         }
 
@@ -235,8 +250,8 @@ public class Parser {
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(arrayElement);
         } else {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "unknown token for ARRAY VALUE");
+            throw new ParserException("Wrong format of input string: " +
+                    "unknown token for ARRAY VALUE", getCurrentToken(), getLastToken());
         }
         arrayElement.setType(NodeType.VALUE);
         parent.put(arrayElement);
@@ -244,8 +259,8 @@ public class Parser {
         next();
         //next should be COMMA or RBRACE
         if (!getCurrentTokenType().equals(TokenType.COMMA) && !getCurrentTokenType().equals(TokenType.RBRACKET)) {
-            throw new UnmarshallerException("Wrong format of input string: " +
-                    "array VALUES should be delimited by commas");
+            throw new ParserException("Wrong format of input string: " +
+                    "array VALUES should be delimited by commas", getCurrentToken(), getLastToken());
         }
     }
 
