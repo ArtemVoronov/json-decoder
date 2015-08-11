@@ -58,7 +58,8 @@ public class TreeVisitor {
         Method[] methods = clazz.getMethods();
         for (Method method : methods){
             if (isSetter(method) && (method.getName().toLowerCase().endsWith(field.getName().toLowerCase()))) {
-                System.out.println("setter for field: " + field.getName());
+                //debug info
+                //System.out.println("setter for field: " + field.getName());
                 return method;
             }
         }

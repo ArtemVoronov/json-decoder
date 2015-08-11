@@ -25,7 +25,9 @@ public class Unmarshaller {
         Node tree = parser.getTree();
         parser.parse(tree);
         parser.checkEOF();
-        System.out.println(tree.getNodeInfo(""));
+
+        //debug info
+        //System.out.println(tree.getNodeInfo(""));
 
         //create object
         obj = clazz.newInstance();
