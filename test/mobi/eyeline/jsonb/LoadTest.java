@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Тесты производительности
  * Created by Artem Voronov on 12.08.2015.
  */
 @RunWith(Parameterized.class)
@@ -76,8 +77,17 @@ public class LoadTest {
         JSONWithManyObjects = stringBuilder.toString();
     }
 
+    /**
+     * проверяем создание объектов с массивами больших объемов
+     * @throws IllegalAccessException
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test(timeout=2000)
-    public void testCreatingJSONWithHugeArray() throws IllegalAccessException, UnmarshallerException, InstantiationException {
+    public void testCreatingJSONWithHugeArray() throws IllegalAccessException, UnmarshallerException,
+            InstantiationException, LexerException, ParserException {
 
         ComplexObject obj = Unmarshaller.unmarshal(JSONWithHugeArray, ComplexObject.class);
         assertNotNull(obj);
@@ -99,10 +109,21 @@ public class LoadTest {
         }
     }
 
+    /**
+     * проверяем создание объектов с большим количеством вложенных объектов
+     * @throws IllegalAccessException
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test(timeout=2000)
-    public void testCreatingJSONWithManyObjects() throws IllegalAccessException,
-            UnmarshallerException, InstantiationException, ClassNotFoundException, NoSuchMethodException,
-            InvocationTargetException {
+    public void testCreatingJSONWithManyObjects() throws IllegalAccessException, UnmarshallerException,
+            InstantiationException, ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, LexerException, ParserException {
 
         ManyInnerObjects obj = Unmarshaller.unmarshal(JSONWithManyObjects, ManyInnerObjects.class);
         assertNotNull(obj);

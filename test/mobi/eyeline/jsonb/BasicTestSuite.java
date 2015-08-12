@@ -4,6 +4,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
+ * Все тесты
  * Created by Artem Voronov on 11.08.2015.
  */
 @RunWith(Suite.class)

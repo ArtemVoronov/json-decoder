@@ -4,7 +4,7 @@ package mobi.eyeline.jsonb;
  * Parsing exceptions
  * Created by Artem Voronov on 11.08.2015.
  */
-public class ParserException extends UnmarshallerException {
+public class ParserException extends Exception {
 
     private Token currentToken;
     private Token lastToken;

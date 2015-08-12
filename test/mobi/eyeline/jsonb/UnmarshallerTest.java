@@ -10,11 +10,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 
+/**
+ * Тесты для "интерпретатора" Unmarshaller
+ */
 public class UnmarshallerTest {
 
+    /**
+     * проверяем создание несложного объекта
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_SimpleProps() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json="{" +
                 "\"stringProp\":\"stringValue\"," +
                 "\"intProp\":123," +
@@ -29,9 +40,17 @@ public class UnmarshallerTest {
         assertEquals(true, obj.isBooleanProp());
     }
 
+    /**
+     * проверям создание объекта с вложенными объектами и неизвестным полем
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_InnerObjectProp() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json="{" +
                 "\"innerObject1\" : { " +
                 "\"stringProp\":\"stringValue\","+
@@ -58,9 +77,17 @@ public class UnmarshallerTest {
         assertEquals("stringVal2", obj.getStringProp());
     }
 
+    /**
+     * проверям создание объекта с массивами
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_IntArrayProp() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{"+
                 "\"intArray\" : [1,2],"+
                 "\"stringArray\" : [\"3\",\"4\",  null],"+
@@ -83,9 +110,17 @@ public class UnmarshallerTest {
         assertNull(obj.getObjectArray()[2]);
     }
 
+    /**
+     * проверям создание объекта со всеми базовыми типами
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_SimpleObject() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"stringProp\":\"stringValue\"," +
                 "\"intPropPrimitive\":1," +
@@ -112,9 +147,18 @@ public class UnmarshallerTest {
         assertEquals(true, obj.isBooleanPropPrimitive());
     }
 
+    /**
+     * проверям создание объекта с вложенными обьъеком, массивом из двух объектов, каждый из которых
+     * содержит переменные базовых типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_ComplexObject() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String jsonSimpleObject = "{" +
                 "\"stringProp\":\"stringValue\"," +
@@ -176,9 +220,19 @@ public class UnmarshallerTest {
         assertEquals(true, array[1].isBooleanPropPrimitive());
     }
 
+    /**
+     * проверям создание объекта с вложенными обьъеком, массивом из двух объектов, каждый из которых
+     * содержит ещё одив вложенный объект и массив из двух объектов, которые в свою очередь хранят
+     * переменные базовых типов (~тройная вложенность)
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_TheMostComplexObject() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String jsonSimpleObject = "{" +
                 "\"stringProp\":\"stringValue\"," +
                 "\"intPropPrimitive\":1," +
@@ -273,9 +327,18 @@ public class UnmarshallerTest {
         }
     }
 
+    /**
+     * проверяем создание объекта со переменными базовых типов, при условии что у входной
+     * JSON-строки все поля имеют значение null
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_SimpleObject_Null() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"stringProp\":null," +
                 "\"intPropPrimitive\":null," +
@@ -304,9 +367,18 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
+    /**
+     * проверям создание объекта у которого полям являются массивы базовых типов, и каждый из них
+     * сериализует значение null (@JSONProperty.serializeIfNull() == true)
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_SerializableArrays_Null() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"intPropPrimitiveArray\" : [1, null, 2]," +
                 "\"intPropArray\" : [1, null, 2]," +
@@ -367,9 +439,18 @@ public class UnmarshallerTest {
 
     }
 
+    /**
+     * проверям создание объекта у которого полям являются массивы базовых типов, и каждый из них
+     * НЕ сериализует значение null (@JSONProperty.serializeIfNull() == false)
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_NonSerializableArrays_Null() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"intPropPrimitiveArray\" : [1, null, 2]," +
                 "\"intPropArray\" : [1, null, 2]," +
@@ -417,9 +498,17 @@ public class UnmarshallerTest {
         assertEquals(2, stringPropArray.length);
     }
 
+    /**
+     * проверяем создание пустого объекта
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_EmptyObjects1() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{}";
         double delta = 1e-15;
 
@@ -437,9 +526,17 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
+    /**
+     * проверяем создание пустых объектов типа SimpleObject (в JSON-строке пустой массив и пустой объект)
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_EmptyObjects2() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"innerSimpleObject\" : {}," +
                 "\"arraySimpleObject\" : []" +
@@ -464,9 +561,17 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
+    /**
+     * проверяем создание пустых массиов базовых типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_EmptyArrays1() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"intPropPrimitiveArray\" : []," +
                 "\"intPropArray\" : []," +
@@ -504,9 +609,18 @@ public class UnmarshallerTest {
         assertEquals(null, obj.getBooleanProp());
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении 556, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_String1() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"stringPropArray\" : [\"text1\", \"\", 556, 22.5, false]" +
@@ -515,9 +629,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении 5, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_String2() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"stringPropArray\" : [\"text1\", 5]" +
@@ -527,9 +650,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
-    @Test (expected=UnmarshallerException.class)
-    public void testDeserialize_Exception_TypeMismatch_String3() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении without_quotes, должно выброситься LexerException т.к. неизвестная лексема
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test (expected=LexerException.class)
+    public void testDeserialize_Exception_TypeMismatch_String3() throws LexerException,
+            InstantiationException, IllegalAccessException, UnmarshallerException, ParserException {
 
         String json = "{" +
                 "\"stringPropArray\" : [\"text1\", without_quotes]" +
@@ -538,9 +670,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении 2.5, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Integer() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"intPropArray\" : [1, 2.5, \"text1\", true]" +
@@ -548,10 +689,19 @@ public class UnmarshallerTest {
 
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
-    
+
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении "false", должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Boolean() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"booleanPropArray\" : [true, \"false\", 6, 2.5]" +
@@ -560,9 +710,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении true, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Double() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"doublePropArray\" : [5.6, true, \"false\", 6, 2.5]" +
@@ -571,9 +730,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении true, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_Float() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"floatPropArray\" : [5.6, true, \"false\", 6, 2.5]" +
@@ -582,9 +750,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении 2.5, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_IntegerPrimitive() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"intPropPrimitiveArray\" : [1, 2.5, \"text1\", true]" +
@@ -593,9 +770,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении "false", должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_BooleanPrimitive() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"booleanPropPrimitiveArray\" : [true, \"false\", 6, 2.5]" +
@@ -604,9 +790,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении true, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_DoublePrimitive() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"doublePropPrimitiveArray\" : [5.6, true, \"false\", 6, 2.5]" +
@@ -615,9 +810,18 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * * проверяем корректность работы при несоответствии типов Java-объекта и  данных из JSON-строки на входе:
+     * на значении true, должно выброситься UnmarshallerException из-за несовпадения типов
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_Exception_TypeMismatch_FloatPrimitive() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"floatPropPrimitiveArray\" : [5.6, true, \"false\", 6, 2.5]" +
@@ -626,9 +830,17 @@ public class UnmarshallerTest {
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
+    /**
+     * проверяем создние объекта с двумерными массивами
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_TwoDimensional() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"twoDimString\" : [ [\"text1\", \"text2\"] , [\"text3\", \"text4\"] ]," +
@@ -738,9 +950,17 @@ public class UnmarshallerTest {
 
     }
 
+    /**
+     * проверяем создние объекта с трёхмерными массивами
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_MultiDimensional() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String jsonSimpleObject = "{" +
                 "\"stringProp\":\"stringValue\"," +
@@ -830,9 +1050,18 @@ public class UnmarshallerTest {
         assertEquals(true, simpleObject.isBooleanPropPrimitive());
     }
 
+    /**
+     * проверяем корректность работы при отсутствии setter'ов для полей, которые должны быть проинициализированны
+     * т.к. данное поле private и для него не объявлен setter
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test (expected=UnmarshallerException.class)
     public void testDeserialize_NotFoundSetter() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
 
         String json = "{" +
                 "\"stringProp\" : \"text1\"" +
@@ -841,9 +1070,17 @@ public class UnmarshallerTest {
         SimpleObjectMissedSetter obj = Unmarshaller.unmarshal(json, SimpleObjectMissedSetter.class);
     }
 
+    /**
+     * проверяем инициализацию полей при наследовании
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
     @Test
     public void testDeserialize_Hierarchy() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException {
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
         String json = "{" +
                 "\"stringProp\":\"stringValue\"," +
                 "\"intPropPrimitive\":1," +
@@ -872,5 +1109,42 @@ public class UnmarshallerTest {
         assertNull(obj.getArraySimpleObject());
         assertNull(obj.getInnerComplexObject());
         assertNull(obj.getInnerSimpleObject());
+    }
+
+    /**
+     * проверяем инициализацию полей, которые не объявлены в Java-объекте
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_SimpleObject_MissedFields() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+        String json = "{" +
+                "\"stringProp_unknown\":\"stringValue\"," +
+                "\"intPropPrimitive_unknown\":1," +
+                "\"intProp_unknown\":2," +
+                "\"doublePropPrimitive_unknown\":3.5," +
+                "\"doubleProp_unknown\":4.5," +
+                "\"floatPropPrimitive_unknown\":5.5," +
+                "\"floatProp_unknown\":6.5," +
+                "\"booleanPropPrimitive_unknown\":true,"+
+                "\"booleanProp_unknown\":true"+
+                "}";
+        double delta = 1e-15;
+
+        SimpleObject obj = Unmarshaller.unmarshal(json, SimpleObject.class);
+        assertNotNull(obj);
+        assertEquals(null, obj.getStringProp());
+        assertEquals(0, obj.getIntPropPrimitive());
+        assertEquals(null, obj.getIntProp());
+        assertEquals(0., obj.getDoublePropPrimitive(), delta);
+        assertEquals(null, obj.getDoubleProp());
+        assertEquals(0., obj.getFloatPropPrimitive(), delta);
+        assertEquals(null , obj.getFloatProp());
+        assertEquals(null, obj.getBooleanProp());
+        assertEquals(false, obj.isBooleanPropPrimitive());
     }
 }

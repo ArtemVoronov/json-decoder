@@ -8,10 +8,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Тесты для лексера
  * Created by Artem Voronov on 11.08.2015.
  */
 public class LexerTest {
 
+    /**
+     * проверяем преобразование строки в поток лексем на простом объекте
+     */
     @Test
     public void testLexer_SimpleObject() {
         String json = "{" +
@@ -32,6 +36,9 @@ public class LexerTest {
         }
     }
 
+    /**
+     * проверяем преобразование строки в поток лексем на сложном объекте (с массивом и вложенным объектом)
+     */
     @Test
     public void testLexer_ComplexObject() {
         String json = "{" +
@@ -50,6 +57,9 @@ public class LexerTest {
         }
     }
 
+    /**
+     * проверяем преобразование строки в поток лексем на простом массиве
+     */
     @Test
     public void testLexer_SimpleArray() {
         String json = "[\"stringValue\", null, 123, 6.5, true]";
@@ -64,6 +74,9 @@ public class LexerTest {
         }
     }
 
+    /**
+     * проверяем преобразование строки в поток лексем на сложном массиве
+     */
     @Test
     public void testLexer_ComplexArray() {
         String json = "[ {\"stringValue\":null}, [123, 6.5], true]";
@@ -78,6 +91,9 @@ public class LexerTest {
         }
     }
 
+    /**
+     * проверяем, что лексер игнорирует пробелы
+     */
     @Test
     public void testLexer_SimpleObject_Ugly() {
         String json = "    {         " +
@@ -98,6 +114,10 @@ public class LexerTest {
         }
     }
 
+    /**
+     * проверяем корректность работы лексера: токен типа STRING не в кавычках -> LexerException
+     * @throws LexerException
+     */
     @Test (expected=LexerException.class)
     public void testLexer_Exception_MissedQuotes() throws LexerException {
         String json = "{" +
@@ -107,6 +127,10 @@ public class LexerTest {
         List<Token> tokens = Lexer.lex(json);
     }
 
+    /**
+     * проверяем корректность работы лексера: неизвестная лексема в конце JSON-строки
+     * @throws LexerException
+     */
     @Test (expected=LexerException.class)
     public void testLexer_Exception_WrongDataEnds() throws LexerException {
         String json = "{" +
@@ -120,6 +144,10 @@ public class LexerTest {
         List<Token> tokens = Lexer.lex(json);
     }
 
+    /**
+     * проверяем корректность работы лексера: неизвестная лексема в начале JSON-строки
+     * @throws LexerException
+     */
     @Test (expected=LexerException.class)
     public void testLexer_Exception_WrongDataStarts() throws LexerException {
         String json = "WRONG DATA {" +  //<--
@@ -133,6 +161,10 @@ public class LexerTest {
         List<Token> tokens = Lexer.lex(json);
     }
 
+    /**
+     * проверяем корректность работы лексера: неизвестная лексема в середине JSON-строки
+     * @throws LexerException
+     */
     @Test (expected=LexerException.class)
     public void testLexer_Exception_WrongDataSomewhere() throws LexerException {
         String json = "{" +
@@ -146,6 +178,10 @@ public class LexerTest {
         List<Token> tokens = Lexer.lex(json);
     }
 
+    /**
+     * проверяем корректность работы лексера: пустая JSON-строка или пустой объект\массив
+     * @throws LexerException
+     */
     @Test
     public void testLexer_Empty() throws LexerException {
         String json1 = "";

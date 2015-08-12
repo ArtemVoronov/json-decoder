@@ -14,8 +14,8 @@ public class Unmarshaller {
      * @return instance of clazz
      * @throws UnmarshallerException
      */
-    public static <T> T unmarshal(String json, Class<T> clazz)
-            throws UnmarshallerException, IllegalAccessException, InstantiationException {
+    public static <T> T unmarshal(String json, Class<T> clazz) throws UnmarshallerException,
+            IllegalAccessException, InstantiationException, LexerException, ParserException {
         Object obj = null;
         TreeVisitor visitor = new TreeVisitor();
         Parser parser = new Parser();
