@@ -194,6 +194,7 @@ public class Parser {
                 //remove double quotes
                 String value = getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
                 parent.setValue(value);
+                parent.setType(NodeType.PAIR_STRING);
             } catch (StringIndexOutOfBoundsException ex) {
 
                 //actually this code snippet never will be performed,
@@ -205,12 +206,16 @@ public class Parser {
             }
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             parent.setValue(getCurrentToken().getData());
+            parent.setType(NodeType.PAIR_NUMBER);
         } else if (getCurrentTokenType().equals(TokenType.TRUE)) {
             parent.setValue(getCurrentToken().getData());
+            parent.setType(NodeType.PAIR_BOOLEAN);
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             parent.setValue(getCurrentToken().getData());
+            parent.setType(NodeType.PAIR_BOOLEAN);
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
             parent.setIsNull(true);
+            parent.setType(NodeType.PAIR_NULL);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(parent);
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
@@ -254,18 +259,25 @@ public class Parser {
 
         if (getCurrentTokenType().equals(TokenType.STRING)) {
             arrayElement.setValue(getCurrentToken().getData());
+            arrayElement.setType(NodeType.VALUE_STRING);
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             arrayElement.setValue(getCurrentToken().getData());
+            arrayElement.setType(NodeType.VALUE_NUMBER);
         } else if (getCurrentTokenType().equals(TokenType.TRUE)) {
             arrayElement.setValue(getCurrentToken().getData());
+            arrayElement.setType(NodeType.VALUE_BOOLEAN);
         }  else if (getCurrentTokenType().equals(TokenType.FALSE)) {
             arrayElement.setValue(getCurrentToken().getData());
+            arrayElement.setType(NodeType.VALUE_BOOLEAN);
         }  else if (getCurrentTokenType().equals(TokenType.NULL)) {
             arrayElement.setIsNull(true);
+            arrayElement.setType(NodeType.VALUE_NULL);
         } else if (getCurrentTokenType().equals(TokenType.LBRACE)) {
             parse(arrayElement);
+            arrayElement.setType(NodeType.VALUE);
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(arrayElement);
+            arrayElement.setType(NodeType.VALUE);
         } else {
 
             //actually this code snippet never will be performed,
@@ -275,7 +287,6 @@ public class Parser {
             throw new ParserException("Wrong format of input string: " +
                     "unknown token for ARRAY VALUE", getCurrentToken(), getLastToken());
         }
-        arrayElement.setType(NodeType.VALUE);
         parent.put(arrayElement);
 
         next();

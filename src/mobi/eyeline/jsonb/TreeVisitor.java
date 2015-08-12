@@ -58,6 +58,30 @@ public class TreeVisitor {
     }
 
     /**
+     * delete double quotes, check whether it is not string
+     * @param node
+     * @return
+     * @throws UnmarshallerException
+     */
+    private String processArrayStringValue(Node node) throws UnmarshallerException {
+        String text = node.getValue();
+        int len = text.length();
+        if (len > 1) {
+            String starts = text.substring(0, 1);
+            String ends = text.substring(len - 1,len);
+            if (starts.equals("\"") && ends.equals("\"")) {
+                return text.substring(1, len - 1);
+            } else {
+                throw new UnmarshallerException("Type mismatch: " +
+                        "array type is string, but element is not");
+            }
+        } else {
+            throw new UnmarshallerException("Type mismatch: " +
+                    "array type is string, but element is not");
+        }
+    }
+
+    /**
      * add array element from tree to the list (in other words create Java Object from tree node)
      * @param node array value node
      * @param list list which will be filled
@@ -78,21 +102,7 @@ public class TreeVisitor {
         }
         try {
             if (type.equals(String.class)) {
-                String text = node.getValue();
-                int len = text.length();
-                if (len > 1) {
-                    String starts = text.substring(0, 1);
-                    String ends = text.substring(len - 1,len);
-                    if (starts.equals("\"") && ends.equals("\"")) {
-                        value = text.substring(1, len - 1);
-                    } else {
-                        throw new UnmarshallerException("Type mismatch: " +
-                                "array type is string, but element is not");
-                    }
-                } else {
-                    throw new UnmarshallerException("Type mismatch: " +
-                            "array type is string, but element is not");
-                }
+                value = processArrayStringValue(node);
             } else if (type.equals(Integer.TYPE)) {
                 value = Integer.parseInt(node.getValue());
             } else if (type.equals(Integer.class)) {
@@ -147,10 +157,25 @@ public class TreeVisitor {
                 list.add(result[0]);
                 return;
             } else {
-                //else -> object
-                value = type.newInstance();
-                visitTree(node, value);
-                cutBranch(node);
+                //it could be Object.class
+                //or custom Object
+                if (type.equals(Object.class)) {
+                    if (node.getType().equals(NodeType.VALUE_NUMBER)) {
+                        value = Double.parseDouble(node.getValue());
+                    } else if (node.getType().equals(NodeType.VALUE_BOOLEAN)) {
+                        value = Boolean.parseBoolean(node.getValue());
+                    } else if (node.getType().equals(NodeType.VALUE_NULL)) {
+                        value = null;
+                    } else if (node.getType().equals(NodeType.VALUE_STRING)) {
+                        value = processArrayStringValue(node);
+                    } else  {
+                        value = node.getValue();
+                    }
+                } else {
+                    value = type.newInstance();
+                    visitTree(node, value);
+                    cutBranch(node);
+                }
             }
             list.add(value);
         } catch (NumberFormatException ex) {
@@ -243,10 +268,24 @@ public class TreeVisitor {
                         cutBranch(node);
                         return;
                     } else {
-                        //complex field (object)
-                        value = type.newInstance();
-                        visitTree(node, value);
-                        cutBranch(node);
+                        //it could be Object.class
+                        //or custom Object
+                        if (type.equals(Object.class)) {
+                            if (node.getType().equals(NodeType.PAIR_NUMBER)) {
+                                value = Double.parseDouble(node.getValue());
+                            } else if (node.getType().equals(NodeType.PAIR_BOOLEAN)) {
+                                value = Boolean.parseBoolean(node.getValue());
+                            } else if (node.getType().equals(NodeType.PAIR_NULL)) {
+                                value = null;
+                            }  else {
+                                value = node.getValue();
+                            }
+
+                        } else {
+                            value = type.newInstance();
+                            visitTree(node, value);
+                            cutBranch(node);
+                        }
                     }
 
                     //set value

@@ -1,6 +1,7 @@
 package mobi.eyeline.jsonb;
 
 import mobi.eyeline.jsonb.model.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -1262,5 +1263,131 @@ public class UnmarshallerTest {
         assertEquals(true, obj.getBooleanProp());
         assertEquals(true, obj.isBooleanPropPrimitive());
         assertEquals("stringValue", sob.getStringProp());
+    }
+
+    /**
+     * проверяем инициализацию полей класса Object, преобразования должны быть по принципу:
+     * JSON_STRING -> String.class
+     * JSON_NUMBER -> Double.class (берем самый "обширный" числовой класс)
+     * JSON_TRUE, JSON_FALSE -> Boolean.class
+     * JSON_NULL -> null
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_MixedObject() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+
+        String jsonString = "{" +
+                "\"object\" : \"text1\"" +
+                "}";
+
+        String jsonInt = "{" +
+                "\"object\" : 1" +
+                "}";
+
+        String jsonFractional = "{" +
+                "\"object\" : 1.5" +
+                "}";
+
+        String jsonBoolean = "{" +
+                "\"object\" : true" +
+                "}";
+
+        String jsonNull = "{" +
+                "\"object\" : null" +
+                "}";
+
+        Mixed obj1 = Unmarshaller.unmarshal(jsonString, Mixed.class);
+        Mixed obj2 = Unmarshaller.unmarshal(jsonInt, Mixed.class);
+        Mixed obj3 = Unmarshaller.unmarshal(jsonFractional, Mixed.class);
+        Mixed obj4 = Unmarshaller.unmarshal(jsonBoolean, Mixed.class);
+        Mixed obj5 = Unmarshaller.unmarshal(jsonNull, Mixed.class);
+
+        assertNotNull(obj1);
+        assertNotNull(obj2);
+        assertNotNull(obj3);
+        assertNotNull(obj4);
+        assertNotNull(obj5);
+
+        assertEquals("text1", obj1.getObject());
+        assertEquals(1.0, obj2.getObject());
+        assertEquals(1.5, obj3.getObject());
+        assertEquals(true, obj4.getObject());
+        assertEquals(null, obj5.getObject());
+    }
+
+    /**
+     * проверяем инициализацию полей класса Object на массиве, преобразования должны быть по принципу:
+     * JSON_STRING -> String.class
+     * JSON_NUMBER -> Double.class (берем самый "обширный" числовой класс)
+     * JSON_TRUE, JSON_FALSE -> Boolean.class
+     * JSON_NULL -> null
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_MixedArray() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+
+        String json = "{" +
+                "\"array\" : [ \"text\", 11, false, 22.5, true, null]" +
+                "}";
+
+        Mixed obj = Unmarshaller.unmarshal(json, Mixed.class);
+
+        assertNotNull(obj);
+
+        assertEquals("text", obj.getArray()[0]);
+        assertEquals(11.0, obj.getArray()[1]);
+        assertEquals(false, obj.getArray()[2]);
+        assertEquals(22.5, obj.getArray()[3]);
+        assertEquals(true, obj.getArray()[4]);
+        assertEquals(null, obj.getArray()[5]);
+    }
+
+    /**
+     * проверяем инициализацию полей класса Object на двумерном массиве, преобразования должны быть по принципу:
+     * JSON_STRING -> String.class
+     * JSON_NUMBER -> Double.class (берем самый "обширный" числовой класс)
+     * JSON_TRUE, JSON_FALSE -> Boolean.class
+     * JSON_NULL -> null
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_MixedGrid() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+
+        String json = "{" +
+                "\"grid\" : [ " +
+                "[\"text1\", 1], " +
+                "[1, true], " +
+                "[null, 2.5]," +
+                "[true, \"text2\"]" +
+                "]" +
+                "}";
+        Mixed obj = Unmarshaller.unmarshal(json, Mixed.class);
+
+        assertNotNull(obj);
+
+        assertEquals("text1", obj.getGrid()[0][0]);
+        assertEquals(1., obj.getGrid()[1][0]);
+        assertEquals(null, obj.getGrid()[2][0]);
+        assertEquals(true, obj.getGrid()[3][0]);
+
+        assertEquals(1., obj.getGrid()[0][1]);
+        assertEquals(true, obj.getGrid()[1][1]);
+        assertEquals(2.5, obj.getGrid()[2][1]);
+        assertEquals("text2", obj.getGrid()[3][1]);
     }
 }
