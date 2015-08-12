@@ -1051,26 +1051,6 @@ public class UnmarshallerTest {
     }
 
     /**
-     * проверяем корректность работы при отсутствии setter'ов для полей, которые должны быть проинициализированны
-     * т.к. данное поле private и для него не объявлен setter
-     * @throws UnmarshallerException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws LexerException
-     * @throws ParserException
-     */
-    @Test (expected=UnmarshallerException.class)
-    public void testDeserialize_NotFoundSetter() throws UnmarshallerException,
-            InstantiationException, IllegalAccessException, LexerException, ParserException {
-
-        String json = "{" +
-                "\"stringProp\" : \"text1\"" +
-                "}";
-
-        SimpleObjectMissedSetter obj = Unmarshaller.unmarshal(json, SimpleObjectMissedSetter.class);
-    }
-
-    /**
      * проверяем инициализацию полей при наследовании
      * @throws UnmarshallerException
      * @throws InstantiationException
@@ -1143,8 +1123,144 @@ public class UnmarshallerTest {
         assertEquals(0., obj.getDoublePropPrimitive(), delta);
         assertEquals(null, obj.getDoubleProp());
         assertEquals(0., obj.getFloatPropPrimitive(), delta);
-        assertEquals(null , obj.getFloatProp());
+        assertEquals(null, obj.getFloatProp());
         assertEquals(null, obj.getBooleanProp());
         assertEquals(false, obj.isBooleanPropPrimitive());
+    }
+
+    /**
+     * проверяем создание объекта с полями public
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_ObjectWithPublicFields() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+        String json = "{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intPropPrimitive\":1," +
+                "\"intProp\":2," +
+                "\"doublePropPrimitive\":3.5," +
+                "\"doubleProp\":4.5," +
+                "\"floatPropPrimitive\":5.5," +
+                "\"floatProp\":6.5," +
+                "\"booleanPropPrimitive\":true,"+
+                "\"booleanProp\":true,"+
+                "\"simpleObject\": {\"stringProp\":\"stringValue\"}"+
+                "}";
+        double delta = 1e-15;
+
+        ObjectWithPublicFields obj = Unmarshaller.unmarshal(json, ObjectWithPublicFields.class);
+        assertNotNull(obj);
+
+        SimpleObject sob = obj.simpleObject;
+
+        assertEquals("stringValue", obj.stringProp);
+        assertEquals(1, obj.intPropPrimitive);
+        assertEquals(new Integer(2), obj.intProp);
+        assertEquals(3.5, obj.doublePropPrimitive, delta);
+        assertEquals(new Double(4.5), obj.doubleProp, delta);
+        assertEquals(5.5, obj.floatPropPrimitive, delta);
+        assertEquals(new Float(6.5), obj.floatProp, delta);
+        assertEquals(true, obj.booleanProp);
+        assertEquals(true, obj.booleanPropPrimitive);
+        assertEquals("stringValue", sob.getStringProp());
+
+//        assertEquals("stringValue", obj.getStringProp());
+//        assertEquals(1, obj.getIntPropPrimitive());
+//        assertEquals(new Integer(2), obj.getIntProp());
+//        assertEquals(3.5, obj.getDoublePropPrimitive(), delta);
+//        assertEquals(new Double(4.5), obj.getDoubleProp(), delta);
+//        assertEquals(5.5, obj.getFloatPropPrimitive(), delta);
+//        assertEquals(new Float(6.5), obj.getFloatProp(), delta);
+//        assertEquals(true, obj.getBooleanProp());
+//        assertEquals(true, obj.isBooleanPropPrimitive());
+    }
+
+    /**
+     * проверяем создание объекта с полями protected
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_ObjectWithProtectedFields() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+        String json = "{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intPropPrimitive\":1," +
+                "\"intProp\":2," +
+                "\"doublePropPrimitive\":3.5," +
+                "\"doubleProp\":4.5," +
+                "\"floatPropPrimitive\":5.5," +
+                "\"floatProp\":6.5," +
+                "\"booleanPropPrimitive\":true,"+
+                "\"booleanProp\":true,"+
+                "\"simpleObject\": {\"stringProp\":\"stringValue\"}"+
+                "}";
+        double delta = 1e-15;
+
+        ObjectWithProtectedFields obj = Unmarshaller.unmarshal(json, ObjectWithProtectedFields.class);
+        assertNotNull(obj);
+
+        SimpleObject sob = obj.getSimpleObject();
+
+        assertEquals("stringValue", obj.getStringProp());
+        assertEquals(1, obj.getIntPropPrimitive());
+        assertEquals(new Integer(2), obj.getIntProp());
+        assertEquals(3.5, obj.getDoublePropPrimitive(), delta);
+        assertEquals(new Double(4.5), obj.getDoubleProp(), delta);
+        assertEquals(5.5, obj.getFloatPropPrimitive(), delta);
+        assertEquals(new Float(6.5), obj.getFloatProp(), delta);
+        assertEquals(true, obj.getBooleanProp());
+        assertEquals(true, obj.isBooleanPropPrimitive());
+        assertEquals("stringValue", sob.getStringProp());
+    }
+
+    /**
+     * проверяем создание объекта с полями private
+     * @throws UnmarshallerException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws LexerException
+     * @throws ParserException
+     */
+    @Test
+    public void testDeserialize_ObjectWithPrivateFields() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException, LexerException, ParserException {
+        String json = "{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intPropPrimitive\":1," +
+                "\"intProp\":2," +
+                "\"doublePropPrimitive\":3.5," +
+                "\"doubleProp\":4.5," +
+                "\"floatPropPrimitive\":5.5," +
+                "\"floatProp\":6.5," +
+                "\"booleanPropPrimitive\":true,"+
+                "\"booleanProp\":true,"+
+                "\"simpleObject\": {\"stringProp\":\"stringValue\"}"+
+                "}";
+        double delta = 1e-15;
+
+        ObjectWithPrivateFields obj = Unmarshaller.unmarshal(json, ObjectWithPrivateFields.class);
+        assertNotNull(obj);
+
+        SimpleObject sob = obj.getSimpleObject();
+
+        assertEquals("stringValue", obj.getStringProp());
+        assertEquals(1, obj.getIntPropPrimitive());
+        assertEquals(new Integer(2), obj.getIntProp());
+        assertEquals(3.5, obj.getDoublePropPrimitive(), delta);
+        assertEquals(new Double(4.5), obj.getDoubleProp(), delta);
+        assertEquals(5.5, obj.getFloatPropPrimitive(), delta);
+        assertEquals(new Float(6.5), obj.getFloatProp(), delta);
+        assertEquals(true, obj.getBooleanProp());
+        assertEquals(true, obj.isBooleanPropPrimitive());
+        assertEquals("stringValue", sob.getStringProp());
     }
 }

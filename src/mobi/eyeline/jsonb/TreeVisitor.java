@@ -34,39 +34,6 @@ public class TreeVisitor {
     }
 
     /**
-     * checks whether this method is setter
-     * @param method
-     * @return true if it is setter
-     */
-    private boolean isSetter(Method method){
-        if (!method.getName().startsWith("set")) {
-            return false;
-        }
-        if (method.getParameterTypes().length != 1) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * get setter method for the field
-     * @param field field of the clazz
-     * @param clazz class which contains the field
-     * @return setter method for field
-     */
-    private Method getSetter(Field field, Class<?> clazz) {
-        Method[] methods = clazz.getMethods();
-        for (Method method : methods){
-            if (isSetter(method) && (method.getName().toLowerCase().endsWith(field.getName().toLowerCase()))) {
-                //debug info
-                //System.out.println("setter for field: " + field.getName());
-                return method;
-            }
-        }
-        return null;
-    }
-
-    /**
      * check array node and the field of object
      * @param list list which will be filled by array values
      * @param top array node
@@ -224,10 +191,6 @@ public class TreeVisitor {
 
             //variable name should be == json key name
             if (node.getName().toLowerCase().equals(field.getName().toLowerCase())) {
-                Method setter = getSetter(field, clazz);
-                if (setter == null) {
-                    throw new UnmarshallerException("no setter for field: " + field.getName());
-                }
                 Class type = field.getType();
                 try {
                     Object value = null;
@@ -272,7 +235,9 @@ public class TreeVisitor {
                         //check all cases for java types, cast and save value
                         valueArray = castArray(componentType, list);
 
-                        setter.invoke(obj, valueArray );
+                        field.setAccessible(true);
+                        //[0] - because all array wrapped in Object[]
+                        field.set(obj,valueArray[0]);
 
                         //delete processed node
                         cutBranch(node);
@@ -285,7 +250,8 @@ public class TreeVisitor {
                     }
 
                     //set value
-                    setter.invoke(obj,value);
+                    field.setAccessible(true);
+                    field.set(obj, value);
 
                     //debug info
                     //System.out.println("set " + field.getName() +"  == " + value);
