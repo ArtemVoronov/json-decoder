@@ -18,14 +18,14 @@ public class Node {
     Node() {
         this.name = "";
         this.value = "";
-        this.nodes = new ArrayList<Node>();
+        this.nodes = new ArrayList<>();
         this.isNull = false;
     }
 
     Node(String name, String value) {
         this.name = name;
         this.value = value;
-        this.nodes = new ArrayList<Node>();
+        this.nodes = new ArrayList<>();
         this.isNull = false;
     }
 
@@ -34,12 +34,12 @@ public class Node {
         node.setParent(this);
     }
 
-    //TODO: make pretty printin (string concatenation in StringBuilder.append()
     public String getNodeInfo(String indent) {
         StringBuilder info = new StringBuilder(indent + "[:" + getType() + " " + getName() +
                 " " + getValue() + " " + isNull() + "]");
         for (Node node : nodes) {
-            info.append("\n" + node.getNodeInfo(indent + " "));
+            info.append("\n");
+            info.append(node.getNodeInfo(indent + " "));
         }
         return info.toString();
     }
@@ -68,12 +68,11 @@ public class Node {
         this.type = type;
     }
 
-    public List getNodes() {
+    public List<Node> getNodes() {
         return nodes;
     }
 
-    //TODO: unchecked assignment
-    public void setNodes(List nodes) {
+    public void setNodes(List<Node> nodes) {
         this.nodes = nodes;
     }
 

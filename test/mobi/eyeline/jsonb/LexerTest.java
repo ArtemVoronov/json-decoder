@@ -145,4 +145,33 @@ public class LexerTest {
 
         List<Token> tokens = Lexer.lex(json);
     }
+
+    @Test
+    public void testLexer_Empty() throws LexerException {
+        String json1 = "";
+        String json2 = "{}";
+        String json3 = "[]";
+
+        List<Token> tokens1 = Lexer.lex(json1);
+        List<Token> tokens2 = Lexer.lex(json2);
+        List<Token> tokens3 = Lexer.lex(json3);
+
+        assertNotNull(tokens1);
+        assertNotNull(tokens2);
+        assertNotNull(tokens3);
+
+        assertEquals(1, tokens1.size());
+        assertEquals(3, tokens2.size());
+        assertEquals(3, tokens3.size());
+
+        assertEquals(TokenType.EMPTY, tokens1.get(0).getType());
+
+        assertEquals(TokenType.LBRACE, tokens2.get(0).getType());
+        assertEquals(TokenType.RBRACE, tokens2.get(1).getType());
+        assertEquals(TokenType.EOF, tokens2.get(2).getType());
+
+        assertEquals(TokenType.LBRACKET, tokens3.get(0).getType());
+        assertEquals(TokenType.RBRACKET, tokens3.get(1).getType());
+        assertEquals(TokenType.EOF, tokens3.get(2).getType());
+    }
 }

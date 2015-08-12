@@ -1,5 +1,6 @@
 package mobi.eyeline.jsonb;
 
+import mobi.eyeline.jsonb.model.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -381,8 +382,6 @@ public class UnmarshallerTest {
                 "\"booleanPropArray\" : [true, null, true]" +
                 "}";
 
-        double delta = 1e-15;
-
         NonSerializableArrays obj = Unmarshaller.unmarshal(json, NonSerializableArrays.class);
 
         assertNotNull(obj);
@@ -506,17 +505,37 @@ public class UnmarshallerTest {
     }
 
     @Test (expected=UnmarshallerException.class)
-    public void testDeserialize_Exception_TypeMismatch_String() throws UnmarshallerException,
+    public void testDeserialize_Exception_TypeMismatch_String1() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
 
         String json = "{" +
                 "\"stringPropArray\" : [\"text1\", \"\", 556, 22.5, false]" +
                 "}";
 
-        double delta = 1e-15;
+        SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
+    }
+
+    @Test (expected=UnmarshallerException.class)
+    public void testDeserialize_Exception_TypeMismatch_String2() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException {
+
+        String json = "{" +
+                "\"stringPropArray\" : [\"text1\", 5]" +
+                "}";
+
 
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
+    }
 
+    @Test (expected=UnmarshallerException.class)
+    public void testDeserialize_Exception_TypeMismatch_String3() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException {
+
+        String json = "{" +
+                "\"stringPropArray\" : [\"text1\", without_quotes]" +
+                "}";
+
+        SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -527,10 +546,7 @@ public class UnmarshallerTest {
                 "\"intPropArray\" : [1, 2.5, \"text1\", true]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
     
     @Test (expected=UnmarshallerException.class)
@@ -541,10 +557,7 @@ public class UnmarshallerTest {
                 "\"booleanPropArray\" : [true, \"false\", 6, 2.5]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -555,10 +568,7 @@ public class UnmarshallerTest {
                 "\"doublePropArray\" : [5.6, true, \"false\", 6, 2.5]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -569,10 +579,7 @@ public class UnmarshallerTest {
                 "\"floatPropArray\" : [5.6, true, \"false\", 6, 2.5]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -583,10 +590,7 @@ public class UnmarshallerTest {
                 "\"intPropPrimitiveArray\" : [1, 2.5, \"text1\", true]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -597,10 +601,7 @@ public class UnmarshallerTest {
                 "\"booleanPropPrimitiveArray\" : [true, \"false\", 6, 2.5]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -611,10 +612,7 @@ public class UnmarshallerTest {
                 "\"doublePropPrimitiveArray\" : [5.6, true, \"false\", 6, 2.5]" +
                 "}";
 
-        double delta = 1e-15;
-
         SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -625,9 +623,118 @@ public class UnmarshallerTest {
                 "\"floatPropPrimitiveArray\" : [5.6, true, \"false\", 6, 2.5]" +
                 "}";
 
+        SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
+    }
+
+    @Test
+    public void testDeserialize_TwoDimensional() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException {
+
+        String json = "{" +
+                "\"twoDimString\" : [ [\"text1\", \"text2\"] , [\"text3\", \"text4\"] ]," +
+                "\"twoDimIntPrimitive\" : [ [1, 2] , [3, 4] ]," +
+                "\"twoDimBooleanPrimitive\" : [ [true, true] , [true, true] ]," +
+                "\"twoDimDoublePrimitive\" : [ [1.5, 2.5] , [3.5, 4.5] ]," +
+                "\"twoDimFloatPrimitive\" :[ [1.5, 2.5] , [3.5, 4.5] ]," +
+                "\"twoDimInt\" : [ [11, 12] , [13, 14] ]," +
+                "\"twoDimBoolean\" :  [ [true, true] , [true, true] ]," +
+                "\"twoDimDouble\" : [ [11.5, 12.5] , [13.5, 14.5] ]," +
+                "\"twoDimFloat\" : [ [11.5, 12.5] , [13.5, 14.5] ]," +
+                "\"twoDimSimpleObject\" : [ " +
+                    "[{\"stringProp\":\"stringValue\"}] , " +
+                    "[{\"intPropPrimitive\":1}] " +
+                  "]" +
+                "}";
         double delta = 1e-15;
 
-        SerializableArrays obj = Unmarshaller.unmarshal(json, SerializableArrays.class);
+        TwoDimensionalArrays obj = Unmarshaller.unmarshal(json, TwoDimensionalArrays.class);
+
+        assertNotNull(obj);
+
+        int[][] twoDimIntPrimitive = obj.getTwoDimIntPrimitive();
+        Integer[][] twoDimInt = obj.getTwoDimInt();
+        double[][] twoDimDoublePrimitive = obj.getTwoDimDoublePrimitive();
+        Double[][] twoDimDouble = obj.getTwoDimDouble();
+        float[][] twoDimFloatPrimitive = obj.getTwoDimFloatPrimitive();
+        Float[][] twoDimFloat = obj.getTwoDimFloat();
+        boolean[][] twoDimBooleanPrimitive = obj.getTwoDimBooleanPrimitive();
+        Boolean[][] twoDimBoolean = obj.getTwoDimBoolean();
+        String[][] twoDimString = obj.getTwoDimString();
+        SimpleObject[][] twoDimSimpleObject = obj.getTwoDimSimpleObject();
+
+        assertNotNull(twoDimIntPrimitive);
+        assertNotNull(twoDimInt);
+        assertNotNull(twoDimDoublePrimitive);
+        assertNotNull(twoDimDouble);
+        assertNotNull(twoDimFloatPrimitive);
+        assertNotNull(twoDimFloat);
+        assertNotNull(twoDimBooleanPrimitive);
+        assertNotNull(twoDimBoolean);
+        assertNotNull(twoDimString);
+        assertNotNull(twoDimSimpleObject);
+
+        assertEquals(2, twoDimIntPrimitive.length);
+        assertEquals(2, twoDimInt.length);
+        assertEquals(2, twoDimDoublePrimitive.length);
+        assertEquals(2, twoDimDouble.length);
+        assertEquals(2, twoDimFloatPrimitive.length);
+        assertEquals(2, twoDimFloat.length);
+        assertEquals(2, twoDimBooleanPrimitive.length);
+        assertEquals(2, twoDimBoolean.length);
+        assertEquals(2, twoDimString.length);
+        assertEquals(2, twoDimSimpleObject.length);
+
+        assertEquals("text1", obj.getTwoDimString()[0][0]);
+        assertEquals("text2", obj.getTwoDimString()[0][1]);
+        assertEquals("text3", obj.getTwoDimString()[1][0]);
+        assertEquals("text4", obj.getTwoDimString()[1][1]);
+
+        assertEquals(1, obj.getTwoDimIntPrimitive()[0][0]);
+        assertEquals(2, obj.getTwoDimIntPrimitive()[0][1]);
+        assertEquals(3, obj.getTwoDimIntPrimitive()[1][0]);
+        assertEquals(4, obj.getTwoDimIntPrimitive()[1][1]);
+
+        assertEquals(new Integer(11), obj.getTwoDimInt()[0][0]);
+        assertEquals(new Integer(12), obj.getTwoDimInt()[0][1]);
+        assertEquals(new Integer(13), obj.getTwoDimInt()[1][0]);
+        assertEquals(new Integer(14), obj.getTwoDimInt()[1][1]);
+
+        assertEquals(1.5, obj.getTwoDimDoublePrimitive()[0][0], delta);
+        assertEquals(2.5, obj.getTwoDimDoublePrimitive()[0][1], delta);
+        assertEquals(3.5, obj.getTwoDimDoublePrimitive()[1][0], delta);
+        assertEquals(4.5, obj.getTwoDimDoublePrimitive()[1][1], delta);
+
+        assertEquals(new Double(11.5), obj.getTwoDimDouble()[0][0]);
+        assertEquals(new Double(12.5), obj.getTwoDimDouble()[0][1]);
+        assertEquals(new Double(13.5), obj.getTwoDimDouble()[1][0]);
+        assertEquals(new Double(14.5), obj.getTwoDimDouble()[1][1]);
+
+        assertEquals(1.5, obj.getTwoDimFloatPrimitive()[0][0], delta);
+        assertEquals(2.5, obj.getTwoDimFloatPrimitive()[0][1], delta);
+        assertEquals(3.5, obj.getTwoDimFloatPrimitive()[1][0], delta);
+        assertEquals(4.5, obj.getTwoDimFloatPrimitive()[1][1], delta);
+
+        assertEquals(new Float(11.5), obj.getTwoDimFloat()[0][0]);
+        assertEquals(new Float(12.5), obj.getTwoDimFloat()[0][1]);
+        assertEquals(new Float(13.5), obj.getTwoDimFloat()[1][0]);
+        assertEquals(new Float(14.5), obj.getTwoDimFloat()[1][1]);
+
+        assertEquals(true, obj.getTwoDimBooleanPrimitive()[0][0]);
+        assertEquals(true, obj.getTwoDimBooleanPrimitive()[0][1]);
+        assertEquals(true, obj.getTwoDimBooleanPrimitive()[1][0]);
+        assertEquals(true, obj.getTwoDimBooleanPrimitive()[1][1]);
+
+        assertEquals(true, obj.getTwoDimBoolean()[0][0]);
+        assertEquals(true, obj.getTwoDimBoolean()[0][1]);
+        assertEquals(true, obj.getTwoDimBoolean()[1][0]);
+        assertEquals(true, obj.getTwoDimBoolean()[1][1]);
+
+        SimpleObject first = obj.getTwoDimSimpleObject()[0][0];
+        SimpleObject second = obj.getTwoDimSimpleObject()[1][0];
+        assertNotNull(first);
+        assertNotNull(second);
+        assertEquals("stringValue", first.getStringProp());
+        assertEquals(1, second.getIntPropPrimitive());
 
     }
 
@@ -635,16 +742,29 @@ public class UnmarshallerTest {
     public void testDeserialize_MultiDimensional() throws UnmarshallerException,
             InstantiationException, IllegalAccessException {
 
+        String jsonSimpleObject = "{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intPropPrimitive\":1," +
+                "\"intProp\":2," +
+                "\"doublePropPrimitive\":3.5," +
+                "\"doubleProp\":4.5," +
+                "\"floatPropPrimitive\":5.5," +
+                "\"floatProp\":6.5," +
+                "\"booleanPropPrimitive\":true,"+
+                "\"booleanProp\":true"+
+                "}";
+
         String json = "{" +
-                "\"multiString\" : [ [\"text1\", \"text2\"] , [\"text3\", \"text4\"] ]," +
-                "\"multiIntPrimitive\" : [ [1, 2] , [3, 4] ]," +
-                "\"multiBooleanPrimitive\" : [ [true, true] , [true, true] ]," +
-                "\"multiDoublePrimitive\" : [ [1.5, 2.5] , [3.5, 4.5] ]," +
-                "\"multiFloatPrimitive\" :[ [1.5, 2.5] , [3.5, 4.5] ]," +
-                "\"multiInt\" : [ [11, 12] , [13, 14] ]," +
-                "\"multiBoolean\" :  [ [true, true, true] , [true, true, true] ]," +
-                "\"multiDouble\" : [ [11.5, 12.5] , [13.5, 14.5] ]," +
-                "\"multiFloat\" : [ [11.5, 12.5] , [13.5, 14.5] ]" +
+                "\"multiDimString\" : [ [ [ \"text1\" ] ] ]," +
+                "\"multiDimIntPrimitive\" : [ [ [ 1 ] ] ]," +
+                "\"multiDimBooleanPrimitive\" : [ [ [ true ] ] ]," +
+                "\"multiDimDoublePrimitive\" : [ [ [ 1.5 ] ] ]," +
+                "\"multiDimFloatPrimitive\" :[ [ [ 1.5 ] ] ]," +
+                "\"multiDimInt\" : [ [ [ 11 ] ] ]," +
+                "\"multiDimBoolean\" :  [ [ [ true ] ] ]," +
+                "\"multiDimDouble\" : [ [ [ 11.5 ] ] ]," +
+                "\"multiDimFloat\" : [ [ [ 11.5 ] ] ]," +
+                "\"multiDimSimpleObject\" : [ [ [ " + jsonSimpleObject +" ] ] ]" +
                 "}";
 
         double delta = 1e-15;
@@ -653,47 +773,75 @@ public class UnmarshallerTest {
 
         assertNotNull(obj);
 
-        int[][] multiIntPrimitive = obj.getMultiIntPrimitive();
-        Integer[][] multiInt = obj.getMultiInt();
-        double[][] multiDoublePrimitive = obj.getMultiDoublePrimitive();
-        Double[][] multiDouble = obj.getMultiDouble();
-        float[][] multiFloatPrimitive = obj.getMultiFloatPrimitive();
-        Float[][] multiFloat = obj.getMultiFloat();
-        boolean[][] multiBooleanPrimitive = obj.getMultiBooleanPrimitive();
-        Boolean[][] multiBoolean = obj.getMultiBoolean();
-        String[][] multiString = obj.getMultiString();
+        int[][][] multiDimIntPrimitive = obj.getMultiDimIntPrimitive();
+        Integer[][][] multiDimInt = obj.getMultiDimInt();
+        double[][][] multiDimDoublePrimitive = obj.getMultiDimDoublePrimitive();
+        Double[][][] multiDimDouble = obj.getMultiDimDouble();
+        float[][][] multiDimFloatPrimitive = obj.getMultiDimFloatPrimitive();
+        Float[][][] multiDimFloat = obj.getMultiDimFloat();
+        boolean[][][] multiDimBooleanPrimitive = obj.getMultiDimBooleanPrimitive();
+        Boolean[][][] multiDimBoolean = obj.getMultiDimBoolean();
+        String[][][] multiDimString = obj.getMultiDimString();
+        SimpleObject[][][] multiDimSimpleObject = obj.getMultiDimSimpleObject();
 
-        assertNotNull(multiIntPrimitive);
-        assertNotNull(multiInt);
-        assertNotNull(multiDoublePrimitive);
-        assertNotNull(multiDouble);
-        assertNotNull(multiFloatPrimitive);
-        assertNotNull(multiFloat);
-        assertNotNull(multiBooleanPrimitive);
-        assertNotNull(multiBoolean);
-        assertNotNull(multiString);
+        assertNotNull(multiDimIntPrimitive);
+        assertNotNull(multiDimInt);
+        assertNotNull(multiDimDoublePrimitive);
+        assertNotNull(multiDimDouble);
+        assertNotNull(multiDimFloatPrimitive);
+        assertNotNull(multiDimFloat);
+        assertNotNull(multiDimBooleanPrimitive);
+        assertNotNull(multiDimBoolean);
+        assertNotNull(multiDimString);
+        assertNotNull(multiDimSimpleObject);
 
-        assertEquals(2, multiIntPrimitive.length);
-        assertEquals(2, multiInt.length);
-        assertEquals(2, multiDoublePrimitive.length);
-        assertEquals(2, multiDouble.length);
-        assertEquals(2, multiFloatPrimitive.length);
-        assertEquals(2, multiFloat.length);
-        assertEquals(2, multiBooleanPrimitive.length);
-        assertEquals(2, multiBoolean.length);
-        assertEquals(2, multiString.length);
+        assertEquals(1, multiDimIntPrimitive.length);
+        assertEquals(1, multiDimInt.length);
+        assertEquals(1, multiDimDoublePrimitive.length);
+        assertEquals(1, multiDimDouble.length);
+        assertEquals(1, multiDimFloatPrimitive.length);
+        assertEquals(1, multiDimFloat.length);
+        assertEquals(1, multiDimBooleanPrimitive.length);
+        assertEquals(1, multiDimBoolean.length);
+        assertEquals(1, multiDimString.length);
+        assertEquals(1, multiDimSimpleObject.length);
 
+        assertEquals(1, obj.getMultiDimIntPrimitive()[0][0][0]);
+        assertEquals(new Integer(11), obj.getMultiDimInt()[0][0][0]);
+        assertEquals(1.5, obj.getMultiDimDoublePrimitive()[0][0][0], delta);
+        assertEquals(new Double(11.5), obj.getMultiDimDouble()[0][0][0]);
+        assertEquals(1.5, obj.getMultiDimFloatPrimitive()[0][0][0], delta);
+        assertEquals(new Float(11.5), obj.getMultiDimFloat()[0][0][0]);
+        assertEquals(true, obj.getMultiDimBooleanPrimitive()[0][0][0]);
+        assertEquals(true, obj.getMultiDimBoolean()[0][0][0]);
+        assertEquals("text1", obj.getMultiDimString()[0][0][0]);
 
-        assertEquals(1, obj.getMultiIntPrimitive()[0][0]);
-        assertEquals(new Integer(11), obj.getMultiInt()[0][0]);
-        assertEquals(1.5, obj.getMultiDoublePrimitive()[0][0], delta);
-        assertEquals(new Double(11.5), obj.getMultiDouble()[0][0]);
-        assertEquals(1.5, obj.getMultiFloatPrimitive()[0][0], delta);
-        assertEquals(new Float(11.5), obj.getMultiFloat()[0][0]);
-        assertEquals(true, obj.getMultiBooleanPrimitive()[0][0]);
-        assertEquals(true, obj.getMultiBoolean()[0][0]);
-        assertEquals("text1", obj.getMultiString()[0][0]);
+        SimpleObject simpleObject = multiDimSimpleObject[0][0][0];
+
+        assertNotNull(simpleObject);
+        assertEquals("stringValue", simpleObject.getStringProp());
+        assertEquals(1, simpleObject.getIntPropPrimitive());
+        assertEquals(new Integer(2), simpleObject.getIntProp());
+        assertEquals(3.5, simpleObject.getDoublePropPrimitive(), delta);
+        assertEquals(new Double(4.5), simpleObject.getDoubleProp(), delta);
+        assertEquals(5.5, simpleObject.getFloatPropPrimitive(), delta);
+        assertEquals(new Float(6.5), simpleObject.getFloatProp(), delta);
+        assertEquals(true, simpleObject.getBooleanProp());
+        assertEquals(true, simpleObject.isBooleanPropPrimitive());
 
 
     }
+
+    @Test (expected=UnmarshallerException.class)
+    public void testDeserialize_NotFoundSetter() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException {
+
+        String json = "{" +
+                "\"stringProp\" : \"text1\"" +
+                "}";
+
+        SimpleObjectMissedSetter obj = Unmarshaller.unmarshal(json, SimpleObjectMissedSetter.class);
+    }
+
+
 }

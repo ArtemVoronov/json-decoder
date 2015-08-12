@@ -1,36 +1,39 @@
-package mobi.eyeline.jsonb;
+package mobi.eyeline.jsonb.model;
 
+import mobi.eyeline.jsonb.annotations.JSONObject;
 import mobi.eyeline.jsonb.annotations.JSONProperty;
 
 /**
  * Created by Artem Voronov on 10.08.2015.
  */
-public class NonSerializableArrays extends SimpleObject {
-    @JSONProperty(serializeIfNull = false)
+@JSONObject
+public class SerializableArrays extends SimpleObject {
+
+    @JSONProperty
     private int[] intPropPrimitiveArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private boolean[] booleanPropPrimitiveArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private double[] doublePropPrimitiveArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private float[] floatPropPrimitiveArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private String[] stringPropArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private Integer[] intPropArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private Boolean[] booleanPropArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private Double[] doublePropArray;
 
-    @JSONProperty(serializeIfNull = false)
+    @JSONProperty
     private Float[] floatPropArray;
 
     public int[] getIntPropPrimitiveArray() {

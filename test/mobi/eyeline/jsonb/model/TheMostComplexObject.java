@@ -1,4 +1,4 @@
-package mobi.eyeline.jsonb;
+package mobi.eyeline.jsonb.model;
 
 import mobi.eyeline.jsonb.annotations.JSONObject;
 import mobi.eyeline.jsonb.annotations.JSONProperty;

@@ -1,7 +1,5 @@
 package mobi.eyeline.jsonb;
 
-import sun.security.util.PendingException;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,8 +23,8 @@ public class Parser {
      * @param input JSON-string
      * @throws LexerException for unknown tokens
      */
-    //lexical analysis -> stream of tokens
     public void init(String input) throws LexerException {
+        //lexical analysis -> stream of tokens
         setTokens(Lexer.lex(input));
         iterator = getTokens().iterator();
         //EMPTY - special status for not initialized token (just for starting of iteration)
@@ -58,7 +56,6 @@ public class Parser {
         //System.out.println("last: " + getLastToken().toString());
         //System.out.println("current: " + getCurrentToken().toString());
         //System.out.println("----------");
-
     }
 
     /**
@@ -75,11 +72,6 @@ public class Parser {
 
             // if {...} then parse Object
             if (getCurrentTokenType().equals(TokenType.LBRACE)) {
-                //check for double braces
-                if (getLastTokenType().equals(TokenType.LBRACE)) {
-                    throw new ParserException("Wrong format of input string: " +
-                            "double LBRACE", getCurrentToken(), getLastToken());
-                }
                 //create object Node, put it in the tree
                 Node objectNode = new Node();
                 objectNode.setType(NodeType.OBJECT);
@@ -91,10 +83,17 @@ public class Parser {
                 arrayNode.setType(NodeType.ARRAY);
                 parent.put(arrayNode);
                 parseArray(arrayNode);
+            } else {
+                if (getCurrentTokenType().equals(TokenType.EMPTY)) {
+                    throw new ParserException("Wrong format of input string: " +
+                            "EMPTY", getCurrentToken(), getLastToken());
+                } else {
+                    throw new ParserException("Wrong format of input string: " +
+                            "expected {...} or [...]", getCurrentToken(), getLastToken());
+                }
             }
         }
     }
-
 
     /**
      * parse OBJECT '{...}'
@@ -135,6 +134,13 @@ public class Parser {
             }
             return;
         }
+        if (getCurrentTokenType().equals(TokenType.LBRACE)) {
+            //check for double braces
+            if (getLastTokenType().equals(TokenType.LBRACE)) {
+                throw new ParserException("Wrong format of input string: " +
+                        "double LBRACE", getCurrentToken(), getLastToken());
+            }
+        }
         Node pairNode = new Node();
         pairNode.setType(NodeType.PAIR);
         try {
@@ -148,8 +154,13 @@ public class Parser {
                         "pair name should be a STRING", getCurrentToken(), getLastToken());
             }
         } catch (StringIndexOutOfBoundsException ex) {
+
+            //actually this code snippet never will be performed,
+            //because Lexer always return STRING token in double quotes
+            //but when we cutting unknown string we must be sure
+            //that in the event of exception we get informative message
             throw new ParserException("Wrong format of input string: " +
-                    "current token is no a STRING", getCurrentToken(), getLastToken());
+                    "current token is not a STRING", getCurrentToken(), getLastToken());
         }
 
         next();
@@ -167,7 +178,7 @@ public class Parser {
             }
         } else {
             throw new ParserException("Wrong format of input string: " +
-                    "preceding token for COLON is not a STRING", getCurrentToken(), getLastToken());
+                    "current and preceding tokens should be COLON and STRING", getCurrentToken(), getLastToken());
         }
     }
 
@@ -184,8 +195,13 @@ public class Parser {
                 String value = getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
                 parent.setValue(value);
             } catch (StringIndexOutOfBoundsException ex) {
+
+                //actually this code snippet never will be performed,
+                //because Lexer always return STRING token in double quotes
+                //but when we cutting unknown string we must be sure
+                //that in the event of exception we get informative message
                 throw new ParserException("Wrong format of input string: " +
-                        "current token is no a STRING VALUE", getCurrentToken(), getLastToken());
+                        "current token is not a STRING VALUE", getCurrentToken(), getLastToken());
             }
         } else if (getCurrentTokenType().equals(TokenType.NUMBER)) {
             parent.setValue(getCurrentToken().getData());
@@ -251,6 +267,11 @@ public class Parser {
         } else if (getCurrentTokenType().equals(TokenType.LBRACKET)) {
             parse(arrayElement);
         } else {
+
+            //actually this code snippet never will be performed,
+            //because Lexer always return STRING token in double quotes
+            //but when we cutting unknown string we must be sure
+            //that in the event of exception we get informative message
             throw new ParserException("Wrong format of input string: " +
                     "unknown token for ARRAY VALUE", getCurrentToken(), getLastToken());
         }
@@ -258,7 +279,7 @@ public class Parser {
         parent.put(arrayElement);
 
         next();
-        //next should be COMMA or RBRACE
+        //next should be COMMA or RBRACKET
         if (!getCurrentTokenType().equals(TokenType.COMMA) && !getCurrentTokenType().equals(TokenType.RBRACKET)) {
             throw new ParserException("Wrong format of input string: " +
                     "array VALUES should be delimited by commas", getCurrentToken(), getLastToken());

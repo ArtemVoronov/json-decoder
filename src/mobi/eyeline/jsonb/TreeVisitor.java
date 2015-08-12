@@ -110,25 +110,22 @@ public class TreeVisitor {
             return;
         }
         try {
-
             if (type.equals(String.class)) {
                 String text = node.getValue();
                 int len = text.length();
                 if (len > 1) {
                     String starts = text.substring(0, 1);
-                    String ends = text.substring(len-1,len);
+                    String ends = text.substring(len - 1,len);
                     if (starts.equals("\"") && ends.equals("\"")) {
-                        value = node.getValue().substring(1, node.getValue().length() - 1);
+                        value = text.substring(1, len - 1);
                     } else {
                         throw new UnmarshallerException("Type mismatch: " +
-                                "array type is string, but element is without double quotes");
+                                "array type is string, but element is not");
                     }
                 } else {
                     throw new UnmarshallerException("Type mismatch: " +
                             "array type is string, but element is not");
                 }
-
-
             } else if (type.equals(Integer.TYPE)) {
                 value = Integer.parseInt(node.getValue());
             } else if (type.equals(Integer.class)) {
@@ -193,8 +190,14 @@ public class TreeVisitor {
             throw new UnmarshallerException("Type mismatch: " +
                     "array element type and array type of object are different");
         } catch (StringIndexOutOfBoundsException ex) {
+
+            //actually this code snippet never will be performed,
+            //because Lexer always return STRING token in double quotes
+            //and all cases for unquoted tokens are processed
+            //but when we cutting unknown string we must be sure
+            //that in the event of exception we get informative message
             throw new UnmarshallerException("Type mismatch: " +
-                    "array type is string, but element is without double quotes");
+                    "array type is string, but element is not");
         }
     }
 
