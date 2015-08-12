@@ -828,8 +828,6 @@ public class UnmarshallerTest {
         assertEquals(new Float(6.5), simpleObject.getFloatProp(), delta);
         assertEquals(true, simpleObject.getBooleanProp());
         assertEquals(true, simpleObject.isBooleanPropPrimitive());
-
-
     }
 
     @Test (expected=UnmarshallerException.class)
@@ -843,5 +841,36 @@ public class UnmarshallerTest {
         SimpleObjectMissedSetter obj = Unmarshaller.unmarshal(json, SimpleObjectMissedSetter.class);
     }
 
+    @Test
+    public void testDeserialize_Hierarchy() throws UnmarshallerException,
+            InstantiationException, IllegalAccessException {
+        String json = "{" +
+                "\"stringProp\":\"stringValue\"," +
+                "\"intPropPrimitive\":1," +
+                "\"intProp\":2," +
+                "\"doublePropPrimitive\":3.5," +
+                "\"doubleProp\":4.5," +
+                "\"floatPropPrimitive\":5.5," +
+                "\"floatProp\":6.5," +
+                "\"booleanPropPrimitive\":true,"+
+                "\"booleanProp\":true"+
+                "}";
+        double delta = 1e-15;
 
+        TheMostComplexObject obj = Unmarshaller.unmarshal(json, TheMostComplexObject.class);
+        assertNotNull(obj);
+        assertEquals("stringValue", obj.getStringProp());
+        assertEquals(1, obj.getIntPropPrimitive());
+        assertEquals(new Integer(2), obj.getIntProp());
+        assertEquals(3.5, obj.getDoublePropPrimitive(), delta);
+        assertEquals(new Double(4.5), obj.getDoubleProp(), delta);
+        assertEquals(5.5, obj.getFloatPropPrimitive(), delta);
+        assertEquals(new Float(6.5), obj.getFloatProp(), delta);
+        assertEquals(true, obj.getBooleanProp());
+        assertEquals(true, obj.isBooleanPropPrimitive());
+        assertNull(obj.getArrayComplexObject());
+        assertNull(obj.getArraySimpleObject());
+        assertNull(obj.getInnerComplexObject());
+        assertNull(obj.getInnerSimpleObject());
+    }
 }

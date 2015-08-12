@@ -290,11 +290,14 @@ public class TreeVisitor {
                     //debug info
                     //System.out.println("set " + field.getName() +"  == " + value);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new UnmarshallerException("Internal error of unmarshalling process: " +
+                            "IllegalAccessException");
                 } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                    throw new UnmarshallerException("Internal error of unmarshalling process: " +
+                            "InvocationTargetException");
                 } catch (InstantiationException e) {
-                    e.printStackTrace();
+                    throw new UnmarshallerException("Internal error of unmarshalling process: " +
+                            "InstantiationException");
                 }
             }
         }

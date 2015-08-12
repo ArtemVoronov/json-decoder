@@ -10,7 +10,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         LexerTest.class,
         ParserTest.class,
-        UnmarshallerTest.class
+        UnmarshallerTest.class,
+        LoadTest.class
 })
 public class BasicTestSuite {
 }
