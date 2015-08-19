@@ -29,26 +29,28 @@ public class Lexer {
             tokenPatternsBuffer.append(String.format("|(?<%s>%s)", tokenType.name(), tokenType.pattern));
         }
 
+        //error token
+        tokenPatternsBuffer.append("|.+");
+
         // exclude '|' symbol
-        Pattern tokenPatterns = Pattern.compile(new String(tokenPatternsBuffer.substring(1)));
+        Pattern tokenPatterns = Pattern.compile(tokenPatternsBuffer.substring(1));
 
         // begin matching tokens
         Matcher matcher = tokenPatterns.matcher(input);
         while (matcher.find()) {
+            boolean found = false;
             for (TokenType tokenType : TokenType.values()) {
                 if (matcher.group(tokenType.name()) != null) {
+                    found = true;
 
-                    //if we have wrong input (e.g. forgotten double quotes for string value)
-                    if (tokenType.equals(TokenType.ERROR)) {
-                        String token = matcher.group(tokenType.name());
-                        throw new LexerException("Wrong format of input string: " +
-                                "unknown token '" + token + "'", token);
-                    }
                     if (!tokenType.equals(TokenType.WHITESPACE)) {
                         tokens.add(new Token(tokenType, matcher.group(tokenType.name())));
                     }
                     break;
                 }
+            }
+            if (!found) {
+                throw new LexerException("Wrong format of input string: unknown token");
             }
         }
 

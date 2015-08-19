@@ -8,6 +8,10 @@ public class LexerException extends Exception {
 
     private String token;
 
+    public LexerException(String message) {
+        super(message);
+    }
+
     public LexerException(String message, String token) {
         super(message);
         this.token = token;

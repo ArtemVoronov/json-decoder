@@ -221,6 +221,10 @@ public class TreeVisitor {
                     Object value = null;
                     Object[] valueArray = null;
                     if (type.equals(String.class)) {
+                        if (node.hasChildren()) {
+                            throw new UnmarshallerException("Type mismatch: " +
+                                    "expected STRING value");
+                        }
                         value = node.getValue();
                     } else if (type.equals(Integer.TYPE)) {
                         value = Integer.parseInt(node.getValue());
@@ -235,8 +239,16 @@ public class TreeVisitor {
                     } else if (type.equals(Float.class)) {
                         value = Float.valueOf(node.getValue());
                     } else if (type.equals(Boolean.TYPE)) {
+                        if (node.hasChildren()) {
+                            throw new UnmarshallerException("Type mismatch: " +
+                                    "expected BOOLEAN value");
+                        }
                         value = Boolean.parseBoolean(node.getValue());
                     } else if (type.equals(Boolean.class)) {
+                        if (node.hasChildren()) {
+                            throw new UnmarshallerException("Type mismatch: " +
+                                    "expected BOOLEAN value");
+                        }
                         value = Boolean.valueOf(node.getValue());
                     } else if (type.isArray()) {
 
@@ -283,8 +295,17 @@ public class TreeVisitor {
 
                         } else {
                             value = type.newInstance();
-                            visitTree(node, value);
-                            cutBranch(node);
+                            if(type.equals(clazz)) {
+                                List<Node> children = node.getNodes();
+                                Iterator iterator = children.iterator();
+                                if(iterator.hasNext()) {
+                                    visitTree((Node) iterator.next(), value);
+                                }
+                            } else {
+                                visitTree(node, value);
+                                cutBranch(node);
+                            }
+
                         }
                     }
 
@@ -303,6 +324,9 @@ public class TreeVisitor {
                 } catch (InstantiationException e) {
                     throw new UnmarshallerException("Internal error of unmarshalling process: " +
                             "InstantiationException");
+                } catch (NumberFormatException e) {
+                    throw new UnmarshallerException("Type mismatch: " +
+                            "expected NUMERIC value");
                 }
             }
         }

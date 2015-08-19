@@ -19,8 +19,7 @@ public enum TokenType {
     TRUE("true"),
     FALSE("false"),
     NULL("null"),
-    EOF("\\z"),
-    ERROR(".+");
+    EOF("\\z");
 
     public final String pattern;
 

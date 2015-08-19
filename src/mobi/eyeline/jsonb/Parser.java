@@ -193,6 +193,7 @@ public class Parser {
             try {
                 //remove double quotes
                 String value = getCurrentToken().getData().substring(1, getCurrentToken().getData().length() - 1);
+                value = value.replaceAll("\\\\n","\n");
                 parent.setValue(value);
                 parent.setType(NodeType.PAIR_STRING);
             } catch (StringIndexOutOfBoundsException ex) {

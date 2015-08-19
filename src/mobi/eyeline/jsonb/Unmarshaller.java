@@ -1,6 +1,8 @@
 package mobi.eyeline.jsonb;
 
 
+import mobi.eyeline.jsonb.annotations.JSONProperty;
+
 /**
  * Unmarshaller used for deserialization of JSON strings to java objects
  */

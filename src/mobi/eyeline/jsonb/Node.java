@@ -91,4 +91,8 @@ public class Node {
     public void setIsNull(boolean isNull) {
         this.isNull = isNull;
     }
+
+    public boolean hasChildren() {
+        return (nodes.size() > 0);
+    }
 }
